@@ -1,5 +1,5 @@
 import {Request, Response} from "express";
-import User from "../methods/User";
+import User from "../methods/user";
 import * as mongoose from "mongoose";
 import * as requestService from "./../services/requestServices";
    

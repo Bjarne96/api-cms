@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 var formidable = require('formidable');
 var fs = require('fs');
-import Resource from "../methods/Resource";
+import Resource from "../methods/resource";
 import * as mongoose from "mongoose";
 import * as requestService from "./../services/requestServices";
 import * as messageUtils from "./../utils/messageUtils"

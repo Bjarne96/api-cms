@@ -1,5 +1,5 @@
 
-import Resource from "../methods/Resource";
+import Resource from "../methods/resource";
 import * as mongoose from "mongoose";
 import { IResource } from "../../schemas";
 

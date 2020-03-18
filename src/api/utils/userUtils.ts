@@ -1,4 +1,4 @@
-import User from "../methods/User";
+import User from "../methods/user";
 import { IUserResponse, IUser, IDBUser }  from "./../interfaces/userInterfaces";
 import mongoose from "../initDb";
 

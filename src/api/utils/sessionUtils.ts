@@ -1,4 +1,4 @@
-import Session from "../methods/Session";
+import Session from "../methods/session";
 import * as mongoose from "mongoose";
 import moment = require('moment');
 import { ISession, ISessionResponse, IDBSession, ISessionParam } from "./../interfaces/sessionInterfaces"
