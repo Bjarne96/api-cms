@@ -65,5 +65,5 @@ typings/
 .next
 
 #custom
-package-lock.json
+yarn.lock
 .env
