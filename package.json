@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node dist/api/index.js",
     "build": "tsc",
     "api": "node dist/api/index.js",
     "dev": "concurrently \"tsc -w\" \"nodemon dist/api/index.js\""
