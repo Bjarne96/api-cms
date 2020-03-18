@@ -6,9 +6,7 @@
   "scripts": {
     "build": "tsc",
     "api": "node dist/api/index.js",
-    "watch-api": "concurrently \"yarn run watch-ts\" \"yarn run watch-node\"",
-    "watch-ts": "tsc -w",
-    "watch-node": "nodemon dist/api/index.js"
+    "dev": "concurrently \"tsc -w\" \"nodemon dist/api/index.js\""
   },
   "author": "",
   "license": "ISC",

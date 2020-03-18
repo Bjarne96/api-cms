@@ -1,6 +1,5 @@
 module.exports = {
     //Server Config
-    mong_local_url : "mongodb://localhost:27017/schurwolldecken",
     web_local_url : "https://localhost:4000",
     port_api : 4000,
     port_web : 3000,
