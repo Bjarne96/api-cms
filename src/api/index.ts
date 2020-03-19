@@ -5,7 +5,6 @@ import cookieParser = require("cookie-parser");
 import bodyParser = require("body-parser");
 import fs = require("fs");
 import https = require("https");
-import config = require('./../../config')
 
 const app = express();
 const privateKey  = fs.readFileSync('certs/server.key', 'utf8'); // find a better way
@@ -21,7 +20,7 @@ app.use(cors({ credentials: true }));
 app.options('*', cors());
 
 //set port
-app.set("port", config.port_api);
+app.set("port", process.env.PORT || 5000);
 
 //something to allow cors or headers?? -> make your selfe know what this is
 app.use(function(req, res, next) {
@@ -36,7 +35,7 @@ require('./routes.js')(app); //loading all routes
 //start https server
 const server = httpsServer.listen(app.get("port"), () => {
     console.log(
-            "App is running on https://localhost:%d in %s mode",
+            "App is running in %d in %s mode",
             app.get("port"),
             app.get("env")
     );
