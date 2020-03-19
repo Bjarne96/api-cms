@@ -3,7 +3,6 @@ import express = require("express");
 import cors = require("cors");
 import cookieParser = require("cookie-parser");
 import bodyParser = require("body-parser");
-import morgan = require("morgan");
 import fs = require("fs");
 import https = require("https");
 import config = require('./../../config')
@@ -14,10 +13,9 @@ const certificate = fs.readFileSync('certs/server.cert', 'utf8'); // find a bett
 const credentials = {key: privateKey, cert: certificate};
 const httpsServer = https.createServer(credentials, app);
 
-// parse body, cookie and use morgan
+// parse body, cookie
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(morgan('dev'))
 app.use(cookieParser());
 app.use(cors({ credentials: true }));
 app.options('*', cors());
