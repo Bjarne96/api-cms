@@ -92,7 +92,9 @@ export let fileupload = (req: any, res: Response) => {
                 fields: 'id, thumbnailLink, webContentLink',
                 role: "reader"
             });
+            console.log("response", response)
             if (response.status !== 200) {
+                console.log("response", response)
                 requestService.sendResponse(res, "error", 500, response.statusText)
             } else {
                 req.body = {
@@ -104,6 +106,7 @@ export let fileupload = (req: any, res: Response) => {
                 await addResource(req, res);
             }
         }catch(err) {
+            console.log("err", err)
             requestService.sendResponse(res, "error", 500, err)
         } 
     })
