@@ -79,7 +79,7 @@ export let fileupload = (req: any, res: Response) => {
             let auth = filestorage;
             const drive = google.drive({ version: 'v3', auth});
             let fileMetadata = {
-                'name': filepath,
+                'name': files.file.name,
                 'parents': [process.env.GOOGLE_FOLDER]
             };
             let media = {
