@@ -68,11 +68,10 @@ export let fileupload = (req: any, res: Response) => {
     var form = new formidable.IncomingForm();
     form.parse(req, async (err, fields, files) => {
         //exceptions fpr 20mb size, jp/png type or undefined file upload
-        ////console.log("files", files)
-        if(files == undefined || files.file === undefined || files.file.size === undefined || files.file.type === undefined) return(requestService.sendResponse(res, "error", 500, messageUtils.upload.undefined))
-        //console.log("files.file.size",files.file.size)
+        if(files == undefined || files.file === undefined || files.file.size === undefined || files.file.type === undefined) {
+            return(requestService.sendResponse(res, "error", 500, messageUtils.upload.undefined))
+        }
         if(files.file.size >= 20000000) return(requestService.sendResponse(res, "error", 500, messageUtils.upload.size))
-        //console.log("files.file.type",files.file.type)
         if(files.file.type !== "image/png" && files.file.type !== "image/jpeg") return(requestService.sendResponse(res, "error", 500, messageUtils.upload.type))
         try{
             let filepath = files.file.path;
@@ -92,9 +91,7 @@ export let fileupload = (req: any, res: Response) => {
                 fields: 'id, thumbnailLink, webContentLink',
                 role: "reader"
             });
-            console.log("response", response)
             if (response.status !== 200) {
-                console.log("response", response)
                 requestService.sendResponse(res, "error", 500, response.statusText)
             } else {
                 req.body = {
@@ -106,7 +103,6 @@ export let fileupload = (req: any, res: Response) => {
                 await addResource(req, res);
             }
         }catch(err) {
-            console.log("err", err)
             requestService.sendResponse(res, "error", 500, err)
         } 
     })
