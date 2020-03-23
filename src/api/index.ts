@@ -5,8 +5,6 @@ import cookieParser = require("cookie-parser");
 import bodyParser = require("body-parser");
 import fs = require("fs");
 import http = require("http");
-
-
 const app = express();
 
 // parse body, cookie
@@ -54,8 +52,5 @@ if(process.env.MODE === "Development") {
         );
     })
 }
-
-
-
 
 export default server;

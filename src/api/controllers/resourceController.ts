@@ -1,11 +1,12 @@
 import {Request, Response} from "express";
 var formidable = require('formidable');
 var fs = require('fs');
+const { google } = require('googleapis');
 import Resource from "../methods/resource";
 import * as mongoose from "mongoose";
 import * as requestService from "./../services/requestServices";
 import * as messageUtils from "./../utils/messageUtils"
-import config = require('./../../../config')
+import { filestorage } from "../initFilestorage"
 
 //GETs -> all Resources
 export let getAllResources = (req: Request, res: Response) => {
@@ -65,7 +66,7 @@ export let updateResource = (req: Request, res: Response) => {
 
 export let fileupload = (req: any, res: Response) => {
     var form = new formidable.IncomingForm();
-    form.parse(req, function (err, fields, files) {
+    form.parse(req, async (err, fields, files) => {
         //exceptions fpr 20mb size, jp/png type or undefined file upload
         ////console.log("files", files)
         if(files == undefined || files.file === undefined || files.file.size === undefined || files.file.type === undefined) return(requestService.sendResponse(res, "error", 500, messageUtils.upload.undefined))
@@ -73,18 +74,38 @@ export let fileupload = (req: any, res: Response) => {
         if(files.file.size >= 20000000) return(requestService.sendResponse(res, "error", 500, messageUtils.upload.size))
         //console.log("files.file.type",files.file.type)
         if(files.file.type !== "image/png" && files.file.type !== "image/jpeg") return(requestService.sendResponse(res, "error", 500, messageUtils.upload.type))
-        let oldpath = files.file.path;
-        let newpath = __dirname + "/../files/" + files.file.name;
-        let path = config.web_local_url + "/files/"+ files.file.name;
-        fs.rename(oldpath, newpath, function (err) {
-            if(err) {
-                requestService.sendResponse(res, "error", 500, err)
-            } else {
-                //sets filename and path into req.body
-                req.body = {name: files.file.name, path: path};
-                addResource(req, res);
+        try{
+            let filepath = files.file.path;
+            let auth = filestorage;
+            const drive = google.drive({ version: 'v3', auth});
+            let fileMetadata = {
+                'name': filepath,
+                'parents': [process.env.GOOGLE_FOLDER]
             };
-        });
+            let media = {
+                mimeType: files.file.type,
+                body: fs.createReadStream(filepath)
+            };
+            let response = await drive.files.create({
+                resource: fileMetadata,
+                media: media,
+                fields: 'id, thumbnailLink, webContentLink',
+                role: "reader"
+            });
+            if (response.status !== 200) {
+                requestService.sendResponse(res, "error", 500, response.statusText)
+            } else {
+                req.body = {
+                    name: files.file.name, 
+                    path: response.data.webContentLink,
+                    thumbnail: response.data.thumbnailLink,
+                    fileId: response.data._id
+                };
+                await addResource(req, res);
+            }
+        }catch(err) {
+            requestService.sendResponse(res, "error", 500, err)
+        } 
     })
 }
 
