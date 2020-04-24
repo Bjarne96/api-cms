@@ -18,7 +18,13 @@ let file_dir = path.join(__dirname, 'files');
 
 module.exports = (app) => {
     
-    //all servies
+    //all needed get services without authentication
+    app.get("/articles", articleService.loadArticles);
+    app.get("/article/:id", articleController.getArticle);
+    app.get("/products", productService.loadProducts);
+    app.get("/product/:id", productController.getProduct);
+    app.get("/resources", resourceController.getAllResources);
+	app.get("/resource/:id", resourceController.getResource);
 
     //session services
     app.post("/login", sessionService.login) //login
