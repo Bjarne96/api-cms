@@ -59,15 +59,15 @@ module.exports = (app) => {
     app.get("/customer", customerController.getCustomerByParam);
 
 	//article routes
-	app.get("/articles", articleService.loadArticles);
-	app.get("/article/:id", articleController.getArticle);
+	//app.get("/articles", articleService.loadArticles);
+	//app.get("/article/:id", articleController.getArticle);
 	app.put("/article", articleController.addArticle);
 	app.delete("/article/:id", articleController.deleteArticle);
 	app.post("/article/:id", articleController.updateArticle);
 
 	//product routes
-    app.get("/products", productService.loadProducts);
-	app.get("/product/:id", productController.getProduct);
+    //app.get("/products", productService.loadProducts);
+	//app.get("/product/:id", productController.getProduct);
 	app.put("/product", productController.addProduct);
 	app.delete("/product/:id", productController.deleteProduct);
 	app.post("/product/:id", productController.updateProduct);
@@ -80,8 +80,8 @@ module.exports = (app) => {
 	app.post("/invoice/:id", invoiceController.updateInvoice);
 
 	//resource routes
-    app.get("/resources", resourceController.getAllResources);
-	app.get("/resource/:id", resourceController.getResource);
+    //app.get("/resources", resourceController.getAllResources);
+	//app.get("/resource/:id", resourceController.getResource);
 	app.put("/resource", resourceController.addResource);
 	app.delete("/resource/:id", resourceController.deleteResource);
     app.post("/resource/:id", resourceController.updateResource);
