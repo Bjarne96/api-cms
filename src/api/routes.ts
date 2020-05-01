@@ -3,6 +3,7 @@ import * as articleController from "./controllers/articleController";
 import * as invoiceController from "./controllers/invoiceController";
 import * as productController from "./controllers/productController";
 import * as resourceController from "./controllers/resourceController";
+import * as structureController from "./controllers/structureController";
 import * as userController from "./controllers/userController";
 
 import * as userService from "./services/userServices";
@@ -16,7 +17,7 @@ let path = require('path');
 let file_dir = path.join(__dirname, 'files');
 
 
-module.exports = (app) => {
+module.exports = (app) => {   
     
     //all needed get services without authentication
     app.get("/articles", articleService.loadArticles);
@@ -24,7 +25,9 @@ module.exports = (app) => {
     app.get("/products", productService.loadProducts);
     app.get("/product/:id", productController.getProduct);
     app.get("/resources", resourceController.getAllResources);
-	app.get("/resource/:id", resourceController.getResource);
+    app.get("/resource/:id", resourceController.getResource);
+    app.get("/structures", structureController.getAllStructures);
+    app.get("/structure/:id", structureController.getStructure);
 
     //session services
     app.post("/login", sessionService.login) //login
@@ -59,15 +62,11 @@ module.exports = (app) => {
     app.get("/customer", customerController.getCustomerByParam);
 
 	//article routes
-	//app.get("/articles", articleService.loadArticles);
-	//app.get("/article/:id", articleController.getArticle);
 	app.put("/article", articleController.addArticle);
 	app.delete("/article/:id", articleController.deleteArticle);
 	app.post("/article/:id", articleController.updateArticle);
 
 	//product routes
-    //app.get("/products", productService.loadProducts);
-	//app.get("/product/:id", productController.getProduct);
 	app.put("/product", productController.addProduct);
 	app.delete("/product/:id", productController.deleteProduct);
 	app.post("/product/:id", productController.updateProduct);
@@ -80,11 +79,17 @@ module.exports = (app) => {
 	app.post("/invoice/:id", invoiceController.updateInvoice);
 
 	//resource routes
-    //app.get("/resources", resourceController.getAllResources);
-	//app.get("/resource/:id", resourceController.getResource);
 	app.put("/resource", resourceController.addResource);
 	app.delete("/resource/:id", resourceController.deleteResource);
     app.post("/resource/:id", resourceController.updateResource);
+
+    //structure routes
+    app.put("/structure", structureController.addStructure);
+    app.delete("/structure/:id", structureController.deleteStructure);
+    app.post("/structure/:id", structureController.updateStructure);
+
+   
+
 
     //file upload
     app.post("/fileupload", resourceController.fileupload)
