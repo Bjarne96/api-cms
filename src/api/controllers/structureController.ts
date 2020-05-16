@@ -2,21 +2,22 @@ import {Request, Response} from "express";
 import Structure from "../methods/structure";
 import * as mongoose from "mongoose";
 import * as requestService from "../services/requestServices";
+import { IDependendStructure } from "../../schemas";
 
 //GET all Structures
 export let getAllStructures = (req: Request, res: Response) => {
-    Structure.find((err: mongoose.Error, customers: any) => {
+    Structure.find((err: mongoose.Error, structures: any) => {
         if(err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
-            requestService.sendResponse(res, "ok", 200, customers)
+            requestService.sendResponse(res, "ok", 200, structures)
         };
     })
 }
 
 //GETs -> one Structure
 export let getStructure = (req: Request, res: Response) => {
-    Structure.findById(req.params.id, (err: mongoose.Error, Structure: any) => {
+    Structure.findById(req.params.id, (err: mongoose.Error, Structure: IDependendStructure) => {
         if(err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {

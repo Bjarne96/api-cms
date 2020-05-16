@@ -10,6 +10,7 @@ import * as userService from "./services/userServices";
 import * as sessionService from "./services/sessionServices";
 import * as productService from "./services/productServices";
 import * as articleService from "./services/articleServices";
+import * as structureService from "./services/structureServices";
 
 import { Request, Response } from 'express';
 let express = require('express')
@@ -24,10 +25,13 @@ module.exports = (app) => {
     app.get("/article/:id", articleController.getArticle);
     app.get("/products", productService.loadProducts);
     app.get("/product/:id", productController.getProduct);
-    app.get("/resources", resourceController.getAllResources);
-    app.get("/resource/:id", resourceController.getResource);
-    app.get("/structures", structureController.getAllStructures);
+    app.get("/structures", structureService.loadStructures);
     app.get("/structure/:id", structureController.getStructure);
+    
+    //structure routes
+    app.put("/structure", structureController.addStructure);
+    app.delete("/structure/:id", structureController.deleteStructure);
+    app.post("/structure/:id", structureController.updateStructure);
 
     //session services
     app.post("/login", sessionService.login) //login
@@ -78,15 +82,15 @@ module.exports = (app) => {
 	app.delete("/invoice/:id", invoiceController.deleteInvoice);
 	app.post("/invoice/:id", invoiceController.updateInvoice);
 
-	//resource routes
+    //resource routes
+    app.get("/resources", resourceController.getAllResources);
+    app.get("/resource/:id", resourceController.getResource);
 	app.put("/resource", resourceController.addResource);
 	app.delete("/resource/:id", resourceController.deleteResource);
     app.post("/resource/:id", resourceController.updateResource);
+    
 
-    //structure routes
-    app.put("/structure", structureController.addStructure);
-    app.delete("/structure/:id", structureController.deleteStructure);
-    app.post("/structure/:id", structureController.updateStructure);
+    
 
    
 

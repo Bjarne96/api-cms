@@ -1,16 +1,16 @@
 import mongoose from "../api/initDb";
 import { IDefaultSchema } from "./default"
-import { IArticle, IProduct } from "."
+import { IArticle, IProduct, IDependendArticle } from "."
 
 export interface IStructure {
     _id: mongoose.Types.ObjectId;
     name: string;
     description: string;
     domain: string;
-    structure: Array<content>,
+    content: Array<IContent>,
 }
 
-export interface content {
+export interface dependendContent {
     _id: mongoose.Types.ObjectId,
     componentType: componentType,
     contentType: contentType,
@@ -22,14 +22,14 @@ export interface IDependendStructure {
     name: string;
     description: string;
     domain: string;
-    structure: Array<dependendContent>,
+    content: Array<dependendContent>,
 }
 
 export type componentType = "set" |  "widescreen"| "productdetail";
 
 export type contentType =  "article" | "product";
 
-export interface dependendContent {
+export interface IContent {
     content: IArticle | IProduct,
     componentType : componentType,
     contentType : contentType,
@@ -41,7 +41,7 @@ export const structureApiSchema = new mongoose.Schema({
     name: {type: String, required: true},
     description: {type: String, required: true},
     domain: {type: String, required: true},
-    structure: [{
+    content: [{
         _id: {type: mongoose.Types.ObjectId, required: true},
         componentType: {type: String, required: true},
         contentType: {type: String, required: true}}
@@ -59,7 +59,7 @@ export let emptyWebStructure = {
     pictures: []
 }
 
-export const articleWebSchema: IDefaultSchema = {
+export const structureWebSchema: IDefaultSchema = {
     formTitle: "Edit Article",
     tableTitle: "Articles",
     fields: [
