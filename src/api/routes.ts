@@ -26,7 +26,7 @@ module.exports = (app) => {
     app.get("/products", productService.loadProducts);
     app.get("/product/:id", productController.getProduct);
     app.get("/structures", structureService.loadStructures);
-    app.get("/structure/:id", structureController.getStructure);
+    app.get("/structure/:id", structureService.loadStructure);
     
     //structure routes
     app.put("/structure", structureController.addStructure);
