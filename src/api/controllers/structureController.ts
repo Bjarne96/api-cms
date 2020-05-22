@@ -2,6 +2,7 @@ import {Request, Response} from "express";
 import Structure from "../methods/structure";
 import * as mongoose from "mongoose";
 import * as requestService from "../services/requestServices";
+import * as messageUtils from "./../utils/messageUtils"
 import { IDependendStructure } from "../../schemas";
 
 //GET all Structures
@@ -27,6 +28,9 @@ export let getStructure = (req: Request, res: Response) => {
 }
 //PUTs -> an new Structure into the table
 export let addStructure = (req: Request, res: Response) => {
+    if(req.body == undefined) {
+        return(requestService.sendResponse(res, "error", 500, messageUtils.invalid.object));
+    }
     let addStructure = new Structure(req.body);
     addStructure.save((err: mongoose.Error) => {
         if(err) {
@@ -36,6 +40,7 @@ export let addStructure = (req: Request, res: Response) => {
         };
     })
 }
+    
 //DELETEs an Structure
 export let deleteStructure = (req: Request, res: Response) => {
     Structure.deleteOne({_id : req.params.id}, (err: mongoose.Error) => {

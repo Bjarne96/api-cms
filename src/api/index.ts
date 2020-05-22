@@ -5,11 +5,19 @@ import cookieParser = require("cookie-parser");
 import bodyParser = require("body-parser");
 import fs = require("fs");
 import http = require("http");
+import * as requestService from "./services/requestServices"
 const app = express();
+var methodOverride = require('method-override');
 
 // parse body, cookie
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}));
+
+
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors({ credentials: true }));
 app.options('*', cors());
@@ -52,5 +60,10 @@ if(process.env.MODE === "Development") {
         );
     })
 }
+//Error Handling
+app.use(methodOverride());
+app.use(function(err, req, res, next) {
+    requestService.sendResponse(res, "error", 400, err)
+});
 
 export default server;
