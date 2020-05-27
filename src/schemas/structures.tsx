@@ -44,7 +44,8 @@ export const structureApiSchema = new mongoose.Schema({
     content: [{
         _id: {type: mongoose.Types.ObjectId, required: true},
         componentType: {type: String, required: true},
-        contentType: {type: String, required: true}}
+        contentType: {type: String, required: true},
+        properties: {type: String, required: false}}
     ],
 });
 
