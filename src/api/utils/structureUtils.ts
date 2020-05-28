@@ -39,10 +39,15 @@ export let loadIndependetStructure = async (dependentStructure: IDependendStruct
         let articles = await articleUtils.getManyArticles(articleIds);
         for(let y = 0; y < content.length; y++) {
             let contentArticle = content[y];
+            let properties = "";
+            if(contentArticle.properties != undefined) {
+                properties = contentArticle.properties;
+            }
             let newContent: IContent = {
                 content : null,
                 contentType : contentArticle.contentType,
-                componentType : contentArticle.componentType
+                componentType : contentArticle.componentType,
+                properties : properties
             };
             if(contentArticle.contentType === "article") {
                 for(let x = 0; x < articles.length; x++) {
