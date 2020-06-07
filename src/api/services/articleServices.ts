@@ -16,7 +16,7 @@ export let loadArticles = async (req, res) => {
             newArray[i].pictures[j] = pictures[j];
         }
     }
-    let newArticles: Array<IArticle>;
+    let newArticles: Array<IArticle> = newArray;
     return(requestService.sendResponse(res, "ok", 200, newArticles));
 }
 
