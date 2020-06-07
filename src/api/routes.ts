@@ -88,12 +88,6 @@ module.exports = (app) => {
 	app.put("/resource", resourceController.addResource);
 	app.delete("/resource/:id", resourceController.deleteResource);
     app.post("/resource/:id", resourceController.updateResource);
-    
-
-    
-
-   
-
 
     //file upload
     app.post("/fileupload", resourceController.fileupload)
