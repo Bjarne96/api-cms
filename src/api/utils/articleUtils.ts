@@ -23,12 +23,14 @@ export let getManyArticles = (articleIds: Array<mongoose.Types.ObjectId>) => {
         let newArticles: Array<IArticle> = [];
         for(let i = 0; i < articles.length; i++) {
             let articlePictures = articles[i].pictures;
-            if(!articlePictures.length) continue;
-            let pictures = await resourceUtils.getManyResources(articlePictures);
-            for(let j = 0; j < pictures.length; j++) {
-                newArray[i].pictures[j] = pictures[j];
-                newArticles.push(newArray[i]);
-            }
+            if(articlePictures.length) {
+                let pictures = await resourceUtils.getManyResources(articlePictures);
+                //console.log('pictures', pictures);
+                for(let j = 0; j < pictures.length; j++) {
+                    newArray[i].pictures[j] = pictures[j];
+                }
+            };
+            await newArticles.push(newArray[i]);
         }
         resolve(newArticles)
     })

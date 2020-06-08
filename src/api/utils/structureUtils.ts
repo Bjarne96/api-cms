@@ -49,14 +49,15 @@ export let loadIndependetStructure = async (dependentStructure: IDependendStruct
                 componentType : contentArticle.componentType,
                 properties : properties
             };
-            if(contentArticle.contentType === "article") {
+            //make product usable - todo
+            //if(contentArticle.contentType === "article") {
                 for(let x = 0; x < articles.length; x++) {
                     if(contentArticle._id.toString() == articles[x]._id.toString()) {
                         newContent.content = articles[x];
                         structure.content.push(newContent);
                     }
                 }
-            }
+            //}
         }
         return(structure);
     }
