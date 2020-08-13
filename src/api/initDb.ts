@@ -1,10 +1,11 @@
 import * as mongoose from "mongoose";
+import config = require('./../../config')
 
 let connect = async () => {
-    await mongoose.connect(process.env.MONGO_URI, {useNewUrlParser: true}, (err: mongoose.Error) => {
-        if(err){
+    await mongoose.connect(config.mongo_uri, { useNewUrlParser: true }, (err: mongoose.Error) => {
+        if (err) {
             console.log("Mongo Error:", err.message);
-        }else{
+        } else {
             console.log("Successfully connected to MongoDB");
         }
     });

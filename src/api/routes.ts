@@ -18,8 +18,8 @@ let path = require('path');
 let file_dir = path.join(__dirname, 'files');
 
 
-module.exports = (app) => {   
-    
+module.exports = (app) => {
+
     //all needed get services without authentication
     app.get("/articles", articleService.loadArticles);
     app.get("/article/:id", articleController.getArticle);
@@ -28,7 +28,7 @@ module.exports = (app) => {
     app.get("/structures", structureService.loadStructures);
     app.get("/structure/:id", structureService.loadStructure);
     app.get("/rawstructure/:id", structureController.getStructure);
-    
+
     //structure routes
     app.put("/structure", structureController.addStructure);
     app.delete("/structure/:id", structureController.deleteStructure);
@@ -42,14 +42,14 @@ module.exports = (app) => {
 
     //activate when making a new account and disable afterwards
     //app.put("/register", userService.register);
-    
+
     //authenticat request (req.header.authorization)
     app.all('/*', async (req: Request, res: Response, next) => {
-        try{
+        try {
             //validates requests, refreshs token and handles next, stops when invalid request
             await sessionService.validate(req, res, next);
             return;
-        } catch(error){
+        } catch (error) {
             //todo error handling
             console.log("catch", error)
             return;
@@ -58,36 +58,36 @@ module.exports = (app) => {
 
     //all data routes
 
-	//customer routes
-	app.get("/customers", customerController.getAllCustomers);
+    //customer routes
+    app.get("/customers", customerController.getAllCustomers);
     app.get("/customer/:id", customerController.getCustomer);
-	app.put("/customer", customerController.addCustomer);
-	app.delete("/customer/:id", customerController.deleteCustomer);
+    app.put("/customer", customerController.addCustomer);
+    app.delete("/customer/:id", customerController.deleteCustomer);
     app.post("/customer/:id", customerController.updateCustomer);
     app.get("/customer", customerController.getCustomerByParam);
 
-	//article routes
-	app.put("/article", articleController.addArticle);
-	app.delete("/article/:id", articleController.deleteArticle);
-	app.post("/article/:id", articleController.updateArticle);
+    //article routes
+    app.put("/article", articleController.addArticle);
+    app.delete("/article/:id", articleController.deleteArticle);
+    app.post("/article/:id", articleController.updateArticle);
 
-	//product routes
-	app.put("/product", productController.addProduct);
-	app.delete("/product/:id", productController.deleteProduct);
-	app.post("/product/:id", productController.updateProduct);
+    //product routes
+    app.put("/product", productController.addProduct);
+    app.delete("/product/:id", productController.deleteProduct);
+    app.post("/product/:id", productController.updateProduct);
 
-	//invoice routes
-	app.get("/invoices", invoiceController.getAllInvoices);
-	app.get("/invoice/:id", invoiceController.getInvoice);
-	app.put("/invoice", invoiceController.addInvoice);
-	app.delete("/invoice/:id", invoiceController.deleteInvoice);
-	app.post("/invoice/:id", invoiceController.updateInvoice);
+    //invoice routes
+    app.get("/invoices", invoiceController.getAllInvoices);
+    app.get("/invoice/:id", invoiceController.getInvoice);
+    app.put("/invoice", invoiceController.addInvoice);
+    app.delete("/invoice/:id", invoiceController.deleteInvoice);
+    app.post("/invoice/:id", invoiceController.updateInvoice);
 
     //resource routes
     app.get("/resources", resourceController.getAllResources);
     app.get("/resource/:id", resourceController.getResource);
-	app.put("/resource", resourceController.addResource);
-	app.delete("/resource/:id", resourceController.deleteResource);
+    app.put("/resource", resourceController.addResource);
+    app.delete("/resource/:id", resourceController.deleteResource);
     app.post("/resource/:id", resourceController.updateResource);
 
     //file upload
@@ -97,11 +97,11 @@ module.exports = (app) => {
 
     //Only admins have access
     app.all('/*', async (req: Request, res: Response, next) => {
-        try{
+        try {
             //validates requests, refreshs token and handles next, stops when invalid request
             await sessionService.validateAdmin(req, res, next);
             return;
-        } catch(error){
+        } catch (error) {
             //todo error handling
             console.log("catch", error)
             return;
@@ -110,12 +110,12 @@ module.exports = (app) => {
 
     //session services
     app.put("/register", userService.register); //register
-    
+
     //user routes
-	app.get("/users", userController.getAllUsers);
+    app.get("/users", userController.getAllUsers);
     app.get("/user/:id", userController.getUser);
     app.put("/user", userController.addUser);
-	app.delete("/user/:id", userController.deleteUser);
-	app.post("/user/:id", userController.updateUser);
+    app.delete("/user/:id", userController.deleteUser);
+    app.post("/user/:id", userController.updateUser);
 
 }

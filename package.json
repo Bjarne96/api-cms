@@ -28,11 +28,13 @@
     "ftp": "^0.3.10",
     "googleapis": "^48.0.0",
     "https": "^1.0.0",
+    "install": "^0.13.0",
     "jsonwebtoken": "^8.5.1",
     "method-override": "^3.0.0",
     "moment": "^2.24.0",
     "mongoose": "^5.6.0",
     "node-ftp": "0.0.1-security",
+    "node-pre-gyp": "^0.15.0",
     "regex": "^0.1.1",
     "ts-loader": "^6.0.4",
     "typescript": "^3.5.2",
@@ -46,6 +48,6 @@
     "@types/mongodb": "^3.1.30",
     "@types/mongoose": "^5.5.11",
     "concurrently": "^5.2.0",
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.4"
   }
 }

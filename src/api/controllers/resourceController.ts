@@ -1,4 +1,4 @@
-import {Request, Response} from "express";
+import { Request, Response } from "express";
 var formidable = require('formidable');
 var fs = require('fs');
 const { google } = require('googleapis');
@@ -7,11 +7,12 @@ import * as mongoose from "mongoose";
 import * as requestService from "./../services/requestServices";
 import * as messageUtils from "./../utils/messageUtils"
 import { filestorage } from "../initFilestorage"
+import config = require('./../../../config')
 
 //GETs -> all Resources
 export let getAllResources = (req: Request, res: Response) => {
     Resource.find((err: mongoose.Error, resources: any) => {
-        if(err) {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             requestService.sendResponse(res, "ok", 200, resources)
@@ -22,7 +23,7 @@ export let getAllResources = (req: Request, res: Response) => {
 //GETs -> one Resource
 export let getResource = (req: Request, res: Response) => {
     Resource.findById(req.params.id, (err: mongoose.Error, Resource: any) => {
-        if(err) {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             requestService.sendResponse(res, "ok", 200, Resource)
@@ -34,7 +35,7 @@ export let getResource = (req: Request, res: Response) => {
 export let addResource = (req: Request, res: Response) => {
     let addResource = new Resource(req.body);
     addResource.save((err: mongoose.Error) => {
-        if(err) {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             requestService.sendResponse(res, "ok", 200, addResource)
@@ -44,8 +45,8 @@ export let addResource = (req: Request, res: Response) => {
 
 //DELETEs -> a Resource
 export let deleteResource = (req: Request, res: Response) => {
-    Resource.deleteOne({_id : req.params.id}, (err: mongoose.Error) => {
-        if(err) {
+    Resource.deleteOne({ _id: req.params.id }, (err: mongoose.Error) => {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             requestService.sendResponse(res, "ok", 200, req.params.id)
@@ -56,7 +57,7 @@ export let deleteResource = (req: Request, res: Response) => {
 //POSTs -> updates a Resource
 export let updateResource = (req: Request, res: Response) => {
     Resource.findByIdAndUpdate(req.params.id, req.body, (err: mongoose.Error) => {
-        if(err) {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             getResource(req, res);
@@ -68,18 +69,18 @@ export let fileupload = (req: any, res: Response) => {
     var form = new formidable.IncomingForm();
     form.parse(req, async (err, fields, files) => {
         //exceptions fpr 20mb size, jp/png type or undefined file upload
-        if(files == undefined || files.file === undefined || files.file.size === undefined || files.file.type === undefined) {
-            return(requestService.sendResponse(res, "error", 500, messageUtils.upload.undefined))
+        if (files == undefined || files.file === undefined || files.file.size === undefined || files.file.type === undefined) {
+            return (requestService.sendResponse(res, "error", 500, messageUtils.upload.undefined))
         }
-        if(files.file.size >= 20000000) return(requestService.sendResponse(res, "error", 500, messageUtils.upload.size))
-        if(files.file.type !== "image/png" && files.file.type !== "image/jpeg") return(requestService.sendResponse(res, "error", 500, messageUtils.upload.type))
-        try{
+        if (files.file.size >= 20000000) return (requestService.sendResponse(res, "error", 500, messageUtils.upload.size))
+        if (files.file.type !== "image/png" && files.file.type !== "image/jpeg") return (requestService.sendResponse(res, "error", 500, messageUtils.upload.type))
+        try {
             let filepath = files.file.path;
             let auth = filestorage;
-            const drive = google.drive({ version: 'v3', auth});
+            const drive = google.drive({ version: 'v3', auth });
             let fileMetadata = {
                 'name': files.file.name,
-                'parents': [process.env.GOOGLE_FOLDER]
+                'parents': [config.google_folder]
             };
             let media = {
                 mimeType: files.file.type,
@@ -95,16 +96,16 @@ export let fileupload = (req: any, res: Response) => {
                 requestService.sendResponse(res, "error", 500, response.statusText)
             } else {
                 req.body = {
-                    name: files.file.name, 
+                    name: files.file.name,
                     path: response.data.webContentLink,
                     thumbnail: response.data.thumbnailLink,
                     fileId: response.data._id
                 };
                 await addResource(req, res);
             }
-        }catch(err) {
+        } catch (err) {
             requestService.sendResponse(res, "error", 500, err)
-        } 
+        }
     })
 }
 
