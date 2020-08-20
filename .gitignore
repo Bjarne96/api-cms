@@ -66,4 +66,4 @@ typings/
 
 #custom
 .env
-./config.js
+config.js
