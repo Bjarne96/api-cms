@@ -1,6 +1,7 @@
 #custom folder
 dist/
 build/
+.vscode/
 
 # Logs
 logs
