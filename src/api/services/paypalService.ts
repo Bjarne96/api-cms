@@ -3,8 +3,8 @@ import * as requestService from "./requestServices";
 import mongoose from "../initDb";
 import { IProduct, IProductSelected } from '../../schemas';
 import { getManyProducts } from "../controllers/productController"
-import { cache } from 'memory-cache';
 const fetch = require('node-fetch')
+const cache = require('memory-cache')
 import config = require('./../../../config')
 
 var purchaseSchema = new mongoose.Schema({ paypalResponse: { type: String, required: true } }, { strict: false });
@@ -47,11 +47,27 @@ export let createPayment = async (req: Request, res: Response) => {
     } catch (err) {
         return (requestService.sendResponse(res, "error", 500, "js error"));
     }
-    //paypal access token handling
-    getAccessToken();
-    //paypal request handling
-
-    return (requestService.sendResponse(res, "ok", 200, "worked"));
+    if (!(cache.get('pp_access_token'))) {
+        //Get new Token
+        let result = JSON.parse(await getAccessToken());
+        //puts in cache(key, value, expires_in(seconds))
+        cache.put('pp_access_token', result.access_token, result.expires_in)
+    }
+    //paypal create payment request
+    let paymentObject = await creatPaymentObject(warenkorb);
+    let paymentRequest = JSON.parse(await createPaymentRequest(paymentObject));
+    let approvalURL;
+    //Todo real exception handling
+    if (paymentRequest == undefined && !paymentRequest.length) return (requestService.sendResponse(res, "ok", 200, "payment request unsuccsessfull"));
+    for (let i = 0; i < paymentRequest.links.length; i++) {
+        const element = paymentRequest.links[i];
+        if (element.rel == "approval_url") {
+            approvalURL = element.href;
+        }
+    }
+    if (paymentRequest == undefined && !paymentRequest.length) return (requestService.sendResponse(res, "ok", 200, "couldnt find approvalurl"));
+    console.log('approvalURL', approvalURL);
+    return (requestService.sendResponse(res, "ok", 200, approvalURL));
 }
 
 //creates a payment by calling paypal api
@@ -82,9 +98,49 @@ export let webHooks = async (req: Request, res: Response, next) => {
         return (requestService.sendResponse(res, "ok", 200, "test"));
     }
 }
+//get called when paypal sends request
+export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
+    for (let i = 0; i < warenkorb.length; i++) {
+        const element = warenkorb[i];
+        let newItem = {
+            "name": element.name,
+            "description": element.variant.description, //change html to text with regex
+            "quantity": element.count,
+            "price": element.variant.price,
+            "sku": "1", //?
+            "currency": "EUR"
+        }
+        basicPaymenObject.transactions[0].item_list.items.push(newItem)
+    }
+    return basicPaymenObject;
+}
+export let createPaymentRequest = async (paymentObject) => {
+    console.log('paymentObject', paymentObject);
+    console.log('paymentObject.transactions[0].item_list.items', paymentObject.transactions[0].item_list.items);
+    let accessToken = cache.get('pp_access_token');
+    console.log('accesstoken', accessToken);
+    let header = {
+        "Authorization": "Bearer " + accessToken,
+        "Content-Type": "application/json"
+    }
+    let body = JSON.stringify(paymentObject);
+    let testi = JSON.stringify(test);
+    let requestOptions = {
+        method: 'POST',
+        headers: header,
+        body: testi
+    };
+    console.log('config.paypal_createpayment_url', config.paypal_createpayment_url);
+    let result = fetch("https://api-m.sandbox.paypal.com/v1/payments/payment", requestOptions)
+        .then(response => response.text())
+        .then(result => { return result })
+        .catch(error => { return error });
+    return result;
+}
+//requests paypal access token
 export let getAccessToken = async () => {
     let client = config.paypal_client_id;
-    let secret = config.secret;
+    let secret = config.paypal_secret;
     let auth = "Basic " + Buffer.from(client + ":" + secret).toString("base64");
     let header = {
         "Authorization": auth,
@@ -97,19 +153,13 @@ export let getAccessToken = async () => {
         headers: header,
         body: urlencoded
     };
-    console.log('config.paypal_token_url', config.paypal_token_url);
-    await fetch(config.paypal_token_url, requestOptions)
-        .then(response => {
-            response.text();
-            console.log(response)
-        })
-        .then(result => console.log(result))
-        .catch(error => console.log('error', error));
-    //cache.put('paypal_access_token', 'disappear', 100);
-    return;
+    let result = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", requestOptions)
+        .then(response => response.text())
+        .then(result => { return result })
+        .catch(error => { return error });
+    return result;
 }
-
-//after purchasing emails need to be sent and data needs to be written?
+//checks the request body for validity
 export let checkCart = async (cart: Array<IProductSelected>) => {
     let defaultcart = {
         "properties": [],
@@ -133,4 +183,90 @@ export let checkCart = async (cart: Array<IProductSelected>) => {
         }
         resolve(true);
     })
+}
+
+export let basicPaymenObject = {
+    "intent": "sale",
+    "payer": {
+        "payment_method": "paypal"
+    },
+    "transactions": [{
+        "amount": {
+            "total": "21.50",
+            "currency": "EUR",
+            "details": {
+                "subtotal": "15.00",
+                "tax": "2.00",
+                "shipping": "2.50",
+                "handling_fee": "1.00",
+                "shipping_discount": "-1.00",
+                "insurance": "2.00"
+            }
+        },
+
+        "description": "This is the payment transaction description.",
+        "custom": "This is a hidden value",
+        "invoice_number": "unique_invoice_number",
+
+        "soft_descriptor": "your order description",
+        "item_list": {
+            "items": []
+        }
+    }],
+    "note_to_payer": "Contact us for any questions on your order.",
+    "redirect_urls": {
+        "return_url": "http://example.com/success",
+        "cancel_url": "http://example.com/cancel"
+    }
+}
+
+export let test = {
+    "intent": "sale",
+    "payer": {
+        "payment_method": "paypal"
+    },
+    "transactions": [{
+        "amount": {
+            "total": "21.50",
+            "currency": "EUR",
+            "details": {
+                "subtotal": "15.00",
+                "tax": "2.00",
+                "shipping": "2.50",
+                "handling_fee": "1.00",
+                "shipping_discount": "-1.00",
+                "insurance": "2.00"
+            }
+        },
+
+        "description": "This is the payment transaction description.",
+        "custom": "This is a hidden value",
+        "invoice_number": "unique_invoice_number",
+
+        "soft_descriptor": "your order description",
+        "item_list": {
+            "items": [{
+                "name": "Item 1",
+                "description": "add description here",
+                "quantity": "2",
+                "price": "10.00",
+                "sku": "1",
+                "currency": "EUR"
+            },
+            {
+                "name": "Voucher",
+                "description": "discount on your order",
+                "quantity": "1",
+                "price": "-5.00",
+                "sku": "vouch1",
+                "currency": "EUR"
+            }
+            ]
+        }
+    }],
+    "note_to_payer": "Contact us for any questions on your order.",
+    "redirect_urls": {
+        "return_url": "http://example.com/success",
+        "cancel_url": "http://example.com/cancel"
+    }
 }
