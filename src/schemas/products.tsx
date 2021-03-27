@@ -14,6 +14,23 @@ export interface IProduct {
     properties: Array<Array<{ name: string, id: Number }>>
 }
 
+export interface IProductVariant {
+    selector_1: number,
+    selector_2: number,
+    pictures: Array<string>,
+    price: number,
+    description: string,
+}
+
+export interface IProductSelected {
+    _id: string,
+    name: string,
+    variant: IProductVariant,
+    properties: Array<Array<{ name: string, id: number }>>
+    count: number;
+    total: number;
+}
+
 export const productApiSchema = new mongoose.Schema({
     name: { type: String, required: true },
     variants: [{

@@ -39,13 +39,13 @@ export let addProduct = (req: Request, res: Response) => {
 
 //DELETEs a Product
 export let deleteProduct = (req: Request, res: Response) => {
-    Product.deleteOne({ _id: req.params.id }, (err: mongoose.Error) => {
-        if (err) {
-            requestService.sendResponse(res, "error", 500, err)
-        } else {
+    Product.deleteOne({ _id: req.params.id })
+        .then((data) => {
             requestService.sendResponse(res, "ok", 200, req.params.id)
-        };
-    })
+        })
+        .catch((err) => {
+            requestService.sendResponse(res, "error", 500, err)
+        })
 }
 
 //POST -> updates a Product

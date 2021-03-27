@@ -3,6 +3,11 @@ dist/
 build/
 .vscode/
 
+#custom
+.env
+config.js
+*.json
+
 # Logs
 logs
 *.log
@@ -64,7 +69,4 @@ typings/
 
 # next.js build output
 .next
-
-#custom
-.env
-config.js
+package-lock.json

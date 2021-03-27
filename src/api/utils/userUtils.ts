@@ -1,5 +1,5 @@
-import User from "../methods/user";
-import { IUserResponse, IUser, IDBUser }  from "./../interfaces/userInterfaces";
+import User, { UserModel } from "../methods/user";
+import { IUserResponse, IDBUser } from "./../interfaces/userInterfaces";
 import mongoose from "../initDb";
 
 //get a User by the given param
@@ -16,20 +16,19 @@ export let getUserByParam = (value: String, param: string) => {
             };
         })
     })
-    
+
 }
 
 //adds User
 export let addUser = (user: IDBUser) => {
-    return new Promise<IUser>(resolve => {
+    return new Promise<UserModel>(resolve => {
         let addUser = new User(user);
-        addUser.save(async (err: mongoose.Error, user: IUser) => {
-            if (err) {
-                console.log("err", err);
-                resolve(null)
-            } else {
+        addUser.save()
+            .then((user) => {
                 resolve(user);
-            }
-        })
+            })
+            .catch((err) => {
+                resolve(null)
+            });
     })
 }

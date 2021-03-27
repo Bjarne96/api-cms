@@ -23,4 +23,15 @@ export const articleApiSchema = new mongoose.Schema({
     url: { type: String, required: true }
 });
 
+import { Document, Model } from "mongoose";
+export interface IUser {
+    firstName: string;
+    lastName: string;
+    age: number;
+    dateOfEntry?: Date;
+    lastUpdated?: Date;
+}
+export interface IUserDocument extends IUser, Document { }
+export interface IUserModel extends Model<IUserDocument> { }
+
 export default articleApiSchema;

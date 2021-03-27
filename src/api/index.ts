@@ -2,21 +2,20 @@ import config = require('./../../config')
 import cookieParser = require("cookie-parser");
 import express = require("express");
 import cors = require("cors");
-import bodyParser = require("body-parser");
 import http = require("http");
 import * as requestService from "./services/requestServices"
 const app = express();
 var methodOverride = require('method-override');
 
 // parse body, cookie
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
 
 
-app.use(bodyParser.urlencoded({
+app.use(express.urlencoded({
     extended: true
 }));
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ credentials: true }));
 app.options('*', cors());

@@ -6,6 +6,7 @@ import * as userController from "./controllers/userController";
 
 import * as userService from "./services/userServices";
 import * as sessionService from "./services/sessionServices";
+import * as paypalService from "./services/paypalService";
 
 import { Request, Response } from 'express';
 let express = require('express')
@@ -14,33 +15,32 @@ let file_dir = path.join(__dirname, 'files');
 
 
 module.exports = (app) => {
-    // Testing loadedBackbone
-    app.get("/loadedbackbone/:id", backboneController.getLoadedBackbone);
-
-    app.get("/backbones", backboneController.getAllBackbones);
-    app.get("/backbone/:id", backboneController.getBackbone);
-    app.put("/backbone", backboneController.addBackbone);
-    app.delete("/backbone/:id", backboneController.deleteBackbone);
-    app.post("/backbone/:id", backboneController.updateBackbone);
 
     //all needed get services without authentication
+    app.get("/loadedbackbone/:id", backboneController.getLoadedBackbone);
     app.get("/articles", articleController.getAllArticles);
     app.get("/article/:id", articleController.getArticle);
     app.get("/products", productController.getAllProducts);
     app.get("/product/:id", productController.getProduct);
 
+    //paypal services
+    app.post("/paypalWebhook", paypalService.webHooks) //paypal-webhooks
+    app.post("/create_payment", paypalService.createPayment) //paypal-createpayment
+    app.get("/check_order/:id", paypalService.checkOrder) //processes to send product
+
     //session services
     app.post("/login", sessionService.login) //login
-
-    //file download - ToDo
-    app.use("/files", express.static(file_dir));
 
     //activate when making a new account and disable afterwards
     //app.put("/register", userService.register);
 
-    //authenticat request (req.header.authorization)
+    //authenticate request (req.header.authorization)
     app.all('/*', async (req: Request, res: Response, next) => {
         try {
+            if (req.originalUrl == "/paypalWebhook") {
+                await paypalService.webHooks;
+                return
+            }
             //validates requests, refreshs token and handles next, stops when invalid request
             await sessionService.validate(req, res, next);
             return;
@@ -52,6 +52,13 @@ module.exports = (app) => {
     });
 
     //all data routes
+
+    //backbone routes
+    app.get("/backbones", backboneController.getAllBackbones);
+    app.get("/backbone/:id", backboneController.getBackbone);
+    app.put("/backbone", backboneController.addBackbone);
+    app.delete("/backbone/:id", backboneController.deleteBackbone);
+    app.post("/backbone/:id", backboneController.updateBackbone);
 
     //customer routes
     app.get("/customers", customerController.getAllCustomers);

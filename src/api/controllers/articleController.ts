@@ -38,13 +38,13 @@ export let addArticle = (req: Request, res: Response) => {
 }
 //DELETEs an Article
 export let deleteArticle = (req: Request, res: Response) => {
-    Article.deleteOne({ _id: req.params.id }, (err: mongoose.Error) => {
-        if (err) {
-            requestService.sendResponse(res, "error", 500, err)
-        } else {
+    Article.deleteOne({ _id: req.params.id })
+        .then((data) => {
             requestService.sendResponse(res, "ok", 200, req.params.id)
-        };
-    })
+        })
+        .catch((err) => {
+            requestService.sendResponse(res, "error", 500, err)
+        });
 }
 
 //POST -> Updates an Article

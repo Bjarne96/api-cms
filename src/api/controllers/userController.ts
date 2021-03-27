@@ -1,12 +1,12 @@
-import {Request, Response} from "express";
+import { Request, Response } from "express";
 import User from "../methods/user";
 import * as mongoose from "mongoose";
 import * as requestService from "./../services/requestServices";
-   
+
 //GETs -> all Users
 export let getAllUsers = (req: Request, res: Response) => {
     User.find((err: mongoose.Error, users: any) => {
-        if(err) {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             requestService.sendResponse(res, "ok", 200, users)
@@ -16,7 +16,7 @@ export let getAllUsers = (req: Request, res: Response) => {
 //GETs -> one User
 export let getUser = (req: Request, res: Response) => {
     User.findById(req.params.id, (err: mongoose.Error, user: any) => {
-        if(err) {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             requestService.sendResponse(res, "ok", 200, user)
@@ -27,7 +27,7 @@ export let getUser = (req: Request, res: Response) => {
 export let addUser = (req: Request, res: Response) => {
     let newUser = new User(req.body);
     newUser.save((err: mongoose.Error) => {
-        if(err) {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             requestService.sendResponse(res, "ok", 200, newUser)
@@ -36,18 +36,18 @@ export let addUser = (req: Request, res: Response) => {
 }
 //DELETEs -> a User
 export let deleteUser = (req: Request, res: Response) => {
-    User.deleteOne({_id : req.params.id}, (err: mongoose.Error) => {
-        if(err) {
-            requestService.sendResponse(res, "error", 500, err)
-        } else {
+    User.deleteOne({ _id: req.params.id })
+        .then((data) => {
             requestService.sendResponse(res, "ok", 200, req.params.id)
-        };
-    })
+        })
+        .catch((err) => {
+            requestService.sendResponse(res, "error", 500, err)
+        })
 }
 //POST -> Updates a User
 export let updateUser = (req: Request, res: Response) => {
     User.findByIdAndUpdate(req.params.id, req.body, (err: mongoose.Error) => {
-        if(err) {
+        if (err) {
             requestService.sendResponse(res, "error", 500, err)
         } else {
             getUser(req, res);
