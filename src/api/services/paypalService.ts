@@ -58,15 +58,18 @@ export let createPayment = async (req: Request, res: Response) => {
     let paymentRequest = JSON.parse(await createPaymentRequest(paymentObject));
     let approvalURL;
     //Todo real exception handling
-    if (paymentRequest == undefined && !paymentRequest.length) return (requestService.sendResponse(res, "ok", 200, "payment request unsuccsessfull"));
+    if (paymentRequest == undefined && !paymentRequest.length) return (
+        requestService.sendResponse(res, "ok", 200, "payment request unsuccsessfull")
+    );
     for (let i = 0; i < paymentRequest.links.length; i++) {
         const element = paymentRequest.links[i];
         if (element.rel == "approval_url") {
             approvalURL = element.href;
         }
     }
-    if (paymentRequest == undefined && !paymentRequest.length) return (requestService.sendResponse(res, "ok", 200, "couldnt find approvalurl"));
-    console.log('approvalURL', approvalURL);
+    if (paymentRequest == undefined && !paymentRequest.length) return (
+        requestService.sendResponse(res, "ok", 200, "couldnt find approvalurl")
+    );
     return (requestService.sendResponse(res, "ok", 200, approvalURL));
 }
 
@@ -115,10 +118,7 @@ export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
     return basicPaymenObject;
 }
 export let createPaymentRequest = async (paymentObject) => {
-    console.log('paymentObject', paymentObject);
-    console.log('paymentObject.transactions[0].item_list.items', paymentObject.transactions[0].item_list.items);
     let accessToken = cache.get('pp_access_token');
-    console.log('accesstoken', accessToken);
     let header = {
         "Authorization": "Bearer " + accessToken,
         "Content-Type": "application/json"
@@ -130,12 +130,12 @@ export let createPaymentRequest = async (paymentObject) => {
         headers: header,
         body: testi
     };
-    console.log('config.paypal_createpayment_url', config.paypal_createpayment_url);
-    let result = fetch("https://api-m.sandbox.paypal.com/v1/payments/payment", requestOptions)
+    let result = await fetch(config.paypal_createpayment_url, requestOptions)
         .then(response => response.text())
         .then(result => { return result })
         .catch(error => { return error });
     return result;
+
 }
 //requests paypal access token
 export let getAccessToken = async () => {
