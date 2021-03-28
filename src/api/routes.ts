@@ -2,6 +2,7 @@ import * as customerController from "./controllers/customerController";
 import * as articleController from "./controllers/articleController";
 import * as productController from "./controllers/productController";
 import * as backboneController from "./controllers/backboneController";
+import * as paymentController from "./controllers/paymentController";
 import * as userController from "./controllers/userController";
 
 import * as userService from "./services/userServices";
@@ -27,6 +28,7 @@ module.exports = (app) => {
     app.post("/paypalWebhook", paypalService.webHooks) //paypal-webhooks
     app.post("/create_payment", paypalService.createPayment) //paypal-createpayment
     app.get("/check_order/:id", paypalService.checkOrder) //processes to send product
+    // app.get("/payments", paymentController.getAllPayments);
 
     //session services
     app.post("/login", sessionService.login) //login

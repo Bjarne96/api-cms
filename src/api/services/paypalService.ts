@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import * as requestService from "./requestServices";
 import mongoose from "../initDb";
-import { IProduct, IProductSelected } from '../../schemas';
+import { IPayment, IProduct, IProductSelected } from '../../schemas';
 import { getManyProducts } from "../controllers/productController"
+import { addPayment, getHighestInvoice } from "../controllers/paymentController"
 const fetch = require('node-fetch')
 const cache = require('memory-cache')
 import config = require('./../../../config')
@@ -61,16 +62,29 @@ export let createPayment = async (req: Request, res: Response) => {
     if (paymentRequest == undefined && !paymentRequest.length) return (
         requestService.sendResponse(res, "ok", 200, "payment request unsuccsessfull")
     );
+    //get Approval Url
     for (let i = 0; i < paymentRequest.links.length; i++) {
         const element = paymentRequest.links[i];
         if (element.rel == "approval_url") {
             approvalURL = element.href;
         }
     }
-    if (paymentRequest == undefined && !paymentRequest.length) return (
+    //Todo real exception handling
+    if (approvalURL == undefined && !approvalURL.length) return (
         requestService.sendResponse(res, "ok", 200, "couldnt find approvalurl")
     );
-    return (requestService.sendResponse(res, "ok", 200, approvalURL));
+    // save paymentid to payment collection
+    let oldInvoice: Array<IPayment> = await getHighestInvoice();
+    console.log('oldInvoice', oldInvoice);
+    //@ts-ignore
+    let newInvoiceNo = oldInvoice[0].invoiceno + 1;
+    let newPayment: IPayment = {
+        paymentid: paymentRequest.id,
+        invoiceno: newInvoiceNo
+    }
+    if (!await addPayment(newPayment)) return (requestService.sendResponse(res, "ok", 200, "mongodb error"));
+    // returns approval url
+    return (requestService.sendResponse(res, "ok", 200, newPayment));
 }
 
 //creates a payment by calling paypal api
