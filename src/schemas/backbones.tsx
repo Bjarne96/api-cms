@@ -15,7 +15,8 @@ export const backboneApiSchema = new mongoose.Schema({
         _id: false,
         name: { type: String, required: true },
         title: { type: String, required: true },
-        url: { type: String, required: true }
+        url: { type: String, required: true },
+        hide: { type: Boolean, required: false }
     }],
     footer: [
         {
@@ -62,4 +63,5 @@ export interface INavItem {
     name: string;
     title: string;
     url: string;
+    hide?: boolean;
 }

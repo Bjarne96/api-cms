@@ -14,8 +14,16 @@ var Purchase = mongoose.model('purchases', purchaseSchema);
 
 //after purchasing emails need to be sent and data needs to be written?
 export let createPayment = async (req: Request, res: Response) => {
-    //validation
+    //validation   
     let warenkorb: Array<IProductSelected> = req.body;
+    //Get new Invoice Number
+    let oldInvoice: Array<IPayment> = await getHighestInvoice();
+    //@ts-ignore
+    let newInvoiceNo = oldInvoice[0].invoiceno + 1;
+    //Sets Alls Amounts and Items into the PaymentObject 
+    let newCreatePaymentObject = await creatPaymentObject(warenkorb);
+    //Sets invoice number
+    newCreatePaymentObject.transactions[0].invoice_number = newInvoiceNo.toString();
     let typevalidation = await checkCart(warenkorb);
     let productIds = [];
     if (!typevalidation) return (requestService.sendResponse(res, "error", 500, "wrong type"));
@@ -55,8 +63,7 @@ export let createPayment = async (req: Request, res: Response) => {
         cache.put('pp_access_token', result.access_token, result.expires_in)
     }
     //paypal create payment request
-    let paymentObject = await creatPaymentObject(warenkorb);
-    let paymentRequest = JSON.parse(await createPaymentRequest(paymentObject));
+    let paymentRequest = JSON.parse(await createPaymentRequest(newCreatePaymentObject));
     let approvalURL;
     //Todo real exception handling
     if (paymentRequest == undefined && !paymentRequest.length) return (
@@ -69,28 +76,24 @@ export let createPayment = async (req: Request, res: Response) => {
             approvalURL = element.href;
         }
     }
+
     //Todo real exception handling
     if (approvalURL == undefined && !approvalURL.length) return (
         requestService.sendResponse(res, "ok", 200, "couldnt find approvalurl")
     );
     // save paymentid to payment collection
-    let oldInvoice: Array<IPayment> = await getHighestInvoice();
-    console.log('oldInvoice', oldInvoice);
-    //@ts-ignore
-    let newInvoiceNo = oldInvoice[0].invoiceno + 1;
     let newPayment: IPayment = {
         paymentid: paymentRequest.id,
         invoiceno: newInvoiceNo
     }
     if (!await addPayment(newPayment)) return (requestService.sendResponse(res, "ok", 200, "mongodb error"));
     // returns approval url
-    return (requestService.sendResponse(res, "ok", 200, newPayment));
+    return (requestService.sendResponse(res, "ok", 200, approvalURL));
 }
 
 //creates a payment by calling paypal api
 export let checkOrder = async (req: Request, res: Response, next) => {
     let orderid = req.params.id
-    console.log('orderid', orderid);
     return (requestService.sendResponse(res, "ok", 200, "jwtPayload"));
 }
 
@@ -117,19 +120,52 @@ export let webHooks = async (req: Request, res: Response, next) => {
 }
 //get called when paypal sends request
 export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
+    var newCreatePaymentObject = { ...createPaymentModel };
+    let subtotalWithTax = 0;
+    let subtotalWithoutTax = 0;
+    let subTaxTotal = 0;
     for (let i = 0; i < warenkorb.length; i++) {
         const element = warenkorb[i];
+        let newDescription = element.name + " in ";
+        for (let j = 0; j < element.properties.length; j++) {
+            const prop = element.properties[j];
+            let selector = element.variant["selector_" + (i + 1)];
+            for (let k = 0; k < prop.length; k++) {
+                const propElem = prop[k];
+                if (propElem.id == 0 && j > 0) {
+                    newDescription = newDescription + " & ";
+                }
+                if (propElem.id == selector) {
+                    newDescription = newDescription + propElem.name;
+                }
+            }
+        }
+        let withoutTaxPrice = Math.round(((element.variant.price / 119) * 100) * 100) / 100;
+        let taxPrice = Math.round(((element.variant.price / 119) * 19) * 100) / 100;
+        let partTax = Math.round((taxPrice * element.count) * 100) / 100
+        subTaxTotal = Math.round((subTaxTotal + partTax) * 100) / 100;
+        subtotalWithoutTax = Math.round((subtotalWithoutTax + (withoutTaxPrice * element.count)) * 100) / 100;
+        subtotalWithTax = subtotalWithTax + (element.count * element.variant.price);
         let newItem = {
             "name": element.name,
-            "description": element.variant.description, //change html to text with regex
-            "quantity": element.count,
-            "price": element.variant.price,
-            "sku": "1", //?
+            "description": newDescription,
+            "quantity": element.count.toString(),
+            "price": withoutTaxPrice.toString(),
+            // "tax": taxPrice.toString(),
+            // "originalPrice": element.variant.price.toString(),
+            // "totalTax": (taxPrice * element.count).toFixed(2),
+            // "totalPrice": (element.variant.price * element.count).toString(),
+            // "totalWithoutTaxPrice": (withoutTaxPrice * element.count).toString(),
+            "sku": "1", //stock keeping unit
             "currency": "EUR"
         }
-        basicPaymenObject.transactions[0].item_list.items.push(newItem)
+        newCreatePaymentObject.transactions[0].item_list.items.push(newItem)
     }
-    return basicPaymenObject;
+    let amount = newCreatePaymentObject.transactions[0].amount;
+    amount.total = (Math.round(subtotalWithTax * 100) / 100).toFixed(2);
+    amount.details.subtotal = (Math.round(subtotalWithoutTax * 100) / 100).toFixed(2);
+    amount.details.tax = (Math.round(subTaxTotal * 100) / 100).toFixed(2);
+    return newCreatePaymentObject;
 }
 export let createPaymentRequest = async (paymentObject) => {
     let accessToken = cache.get('pp_access_token');
@@ -138,11 +174,10 @@ export let createPaymentRequest = async (paymentObject) => {
         "Content-Type": "application/json"
     }
     let body = JSON.stringify(paymentObject);
-    let testi = JSON.stringify(test);
     let requestOptions = {
         method: 'POST',
         headers: header,
-        body: testi
+        body: body
     };
     let result = await fetch(config.paypal_createpayment_url, requestOptions)
         .then(response => response.text())
@@ -150,6 +185,10 @@ export let createPaymentRequest = async (paymentObject) => {
         .catch(error => { return error });
     return result;
 
+}
+//get called to finish the payment after the payee updated the status
+export let executePayment = async (req: Request, res: Response) => {
+    return;
 }
 //requests paypal access token
 export let getAccessToken = async () => {
@@ -199,88 +238,37 @@ export let checkCart = async (cart: Array<IProductSelected>) => {
     })
 }
 
-export let basicPaymenObject = {
+export let createPaymentModel = {
     "intent": "sale",
     "payer": {
         "payment_method": "paypal"
     },
-    "transactions": [{
-        "amount": {
-            "total": "21.50",
-            "currency": "EUR",
-            "details": {
-                "subtotal": "15.00",
-                "tax": "2.00",
-                "shipping": "2.50",
-                "handling_fee": "1.00",
-                "shipping_discount": "-1.00",
-                "insurance": "2.00"
-            }
-        },
-
-        "description": "This is the payment transaction description.",
-        "custom": "This is a hidden value",
-        "invoice_number": "unique_invoice_number",
-
-        "soft_descriptor": "your order description",
-        "item_list": {
-            "items": []
-        }
-    }],
-    "note_to_payer": "Contact us for any questions on your order.",
-    "redirect_urls": {
-        "return_url": "http://example.com/success",
-        "cancel_url": "http://example.com/cancel"
-    }
-}
-
-export let test = {
-    "intent": "sale",
-    "payer": {
-        "payment_method": "paypal"
-    },
-    "transactions": [{
-        "amount": {
-            "total": "21.50",
-            "currency": "EUR",
-            "details": {
-                "subtotal": "15.00",
-                "tax": "2.00",
-                "shipping": "2.50",
-                "handling_fee": "1.00",
-                "shipping_discount": "-1.00",
-                "insurance": "2.00"
-            }
-        },
-
-        "description": "This is the payment transaction description.",
-        "custom": "This is a hidden value",
-        "invoice_number": "unique_invoice_number",
-
-        "soft_descriptor": "your order description",
-        "item_list": {
-            "items": [{
-                "name": "Item 1",
-                "description": "add description here",
-                "quantity": "2",
-                "price": "10.00",
-                "sku": "1",
-                "currency": "EUR"
+    "transactions": [
+        {
+            "amount": {
+                "total": "0.00",
+                "currency": "EUR",
+                "details": {
+                    "subtotal": "0.00",
+                    "tax": "0.00",
+                    "shipping": "0.00",
+                    "handling_fee": "0.00",
+                    "shipping_discount": "0.00",
+                    "insurance": "0.00"
+                }
             },
-            {
-                "name": "Voucher",
-                "description": "discount on your order",
-                "quantity": "1",
-                "price": "-5.00",
-                "sku": "vouch1",
-                "currency": "EUR"
+            "description": config.paypal_description,
+            "custom": "",
+            "invoice_number": "",
+
+            "soft_descriptor": config.paypal_description,
+            "item_list": {
+                "items": []
             }
-            ]
-        }
-    }],
-    "note_to_payer": "Contact us for any questions on your order.",
+        }],
+    "note_to_payer": config.paypal_note_to_payer,
     "redirect_urls": {
-        "return_url": "http://example.com/success",
-        "cancel_url": "http://example.com/cancel"
+        "return_url": config.paypal_redirect_domain + "success",
+        "cancel_url": config.paypal_redirect_domain + "cancel"
     }
 }
