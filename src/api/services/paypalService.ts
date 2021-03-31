@@ -96,7 +96,6 @@ export let checkOrder = async (req: Request, res: Response, next) => {
     let orderid = req.params.id
     return (requestService.sendResponse(res, "ok", 200, "jwtPayload"));
 }
-
 //get called when paypal sends request
 export let webHooks = async (req: Request, res: Response, next) => {
     try {
@@ -167,6 +166,7 @@ export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
     amount.details.tax = (Math.round(subTaxTotal * 100) / 100).toFixed(2);
     return newCreatePaymentObject;
 }
+//Paypal request
 export let createPaymentRequest = async (paymentObject) => {
     let accessToken = cache.get('pp_access_token');
     let header = {
@@ -188,6 +188,7 @@ export let createPaymentRequest = async (paymentObject) => {
 }
 //get called to finish the payment after the payee updated the status
 export let executePayment = async (req: Request, res: Response) => {
+
     return;
 }
 //requests paypal access token
@@ -237,7 +238,7 @@ export let checkCart = async (cart: Array<IProductSelected>) => {
         resolve(true);
     })
 }
-
+//Basci Paypal Object
 export let createPaymentModel = {
     "intent": "sale",
     "payer": {

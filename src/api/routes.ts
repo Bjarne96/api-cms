@@ -25,9 +25,9 @@ module.exports = (app) => {
     app.get("/product/:id", productController.getProduct);
 
     //paypal services
-    app.post("/paypalWebhook", paypalService.webHooks) //paypal-webhooks
     app.post("/create_payment", paypalService.createPayment) //paypal-createpayment
-    app.get("/check_order/:id", paypalService.checkOrder) //processes to send product
+    app.post("/execute_payment", paypalService.executePayment) //paypal-createpayment
+    app.post("/paypalWebhook", paypalService.webHooks) //paypal-webhooks
     // app.get("/payments", paymentController.getAllPayments);
 
     //session services
