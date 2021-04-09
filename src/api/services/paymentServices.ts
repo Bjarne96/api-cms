@@ -56,14 +56,8 @@ export let createPayment = async (req: Request, res: Response) => {
     } catch (err) {
         return (requestService.sendResponse(res, "error", 500, "js error"));
     }
-    if (!(cache.get('pp_access_token'))) {
-        //Get new Token
-        let result = JSON.parse(await getAccessToken());
-        //puts in cache(key, value, expires_in(seconds))
-        cache.put('pp_access_token', result.access_token, result.expires_in)
-    }
     //paypal create payment request
-    let paymentRequest = JSON.parse(await createPaymentRequest(newCreatePaymentObject));
+    let paymentRequest = JSON.parse(await createPaypalRequest("POST", config.paypal_createpayment_url, newCreatePaymentObject));
     let approvalURL;
     //Todo real exception handling
     if (paymentRequest == undefined && !paymentRequest.length) return (
@@ -181,20 +175,36 @@ export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
     //Returns new structured payment object
     return newCreatePaymentObject;
 }
-//Paypal request
-export let createPaymentRequest = async (paymentObject) => {
+//Paypal generic request
+//Method is the http method used in the request
+//secondPartUrl is the route at the paypal api you wanna request (everything after the base url)
+//Data is used when you post somethig
+export let createPaypalRequest = async (method: string, secondPartUrl: string, data?: any) => {
+    //checks for activly cached token
+    if (!(cache.get('pp_access_token'))) {
+        //Get new Token
+        let result = JSON.parse(await getAccessToken());
+        //puts in cache(key, value, expires_in(seconds))
+        cache.put('pp_access_token', result.access_token, result.expires_in)
+    }
+    //sets token
     let accessToken = cache.get('pp_access_token');
+    //sets header
     let header = {
         "Authorization": "Bearer " + accessToken,
         "Content-Type": "application/json"
     }
-    let body = JSON.stringify(paymentObject);
+    //Basic options object
     let requestOptions = {
-        method: 'POST',
-        headers: header,
-        body: body
+        method: method,
+        headers: header
     };
-    let result = await fetch(config.paypal_createpayment_url, requestOptions)
+    //Adds data when post request
+    if (method == 'POST') {
+        requestOptions["body"] = JSON.stringify(data);
+    }
+    //The final request to payal
+    let result = await fetch(config.paypal_base_url + secondPartUrl, requestOptions)
         .then(response => response.text())
         .then(result => { return result })
         .catch(error => { return error });
@@ -203,8 +213,33 @@ export let createPaymentRequest = async (paymentObject) => {
 }
 //get called to finish the payment after the payee updated the status
 export let executePayment = async (req: Request, res: Response) => {
-
-    return;
+    console.log('req.body', req.body);
+    let new_paypal_getpayment_url = config.paypal_getpayment_url.replace("{payment_id}", req.body.paymentId);
+    //get payment and verfiy
+    let paymentResponse = await createPaypalRequest("GET", new_paypal_getpayment_url)
+    //Todo error handling
+    let payment = JSON.parse(paymentResponse);
+    //execute payment
+    if (payment.payer.status == "VERIFIED") {
+        let new_paypal_execute_url = config.paypal_execute_url.replace("{payment_id}", req.body.paymentId);
+        let new_paypal_execute_body = { payer_id: req.body.PayerID }
+        let executeResponse = await createPaypalRequest(
+            "POST",
+            new_paypal_execute_url,
+            new_paypal_execute_body
+        )
+        //Todo error handling
+        let execute = JSON.parse(paymentResponse);
+        if (execute.state == "approved") {
+            //send email to customer and production
+        } else {
+            //send error to admin
+        }
+        //dummy
+        return (requestService.sendResponse(res, "ok", 200, JSON.parse(executeResponse)));
+    }
+    //dummy
+    return (requestService.sendResponse(res, "ok", 200, "ohno"));
 }
 //requests paypal access token
 export let getAccessToken = async () => {
