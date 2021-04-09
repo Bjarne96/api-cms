@@ -6,8 +6,8 @@ import * as userController from "./controllers/userController";
 
 import * as userService from "./services/userServices";
 import * as sessionService from "./services/sessionServices";
-import * as paypalService from "./services/paypalService";
-import * as emailService from "./services/emailService";
+import * as paymentServices from "./services/paymentServices";
+import * as emailServices from "./services/emailServices";
 import { Request, Response } from 'express';
 
 module.exports = (app) => {
@@ -20,13 +20,13 @@ module.exports = (app) => {
     app.get("/product/:id", productController.getProduct);
 
     //email services
-    app.post("/contact", emailService.proccessContact) //dummy proccessor
-    app.post("/trigger", emailService.sendMail) //dummy payment email
+    app.post("/contact", emailServices.proccessContact) //dummy proccessor
+    app.post("/trigger", emailServices.sendMail) //dummy payment email
 
     //paypal services
-    app.post("/create_payment", paypalService.createPayment) //paypal-createpayment
-    app.post("/execute_payment", paypalService.executePayment) //paypal-createpayment
-    app.post("/paypalWebhook", paypalService.webHooks) //paypal-webhooks
+    app.post("/create_payment", paymentServices.createPayment) //paypal-createpayment
+    app.post("/execute_payment", paymentServices.executePayment) //paypal-createpayment
+    app.post("/paypalWebhook", paymentServices.webHooks) //paypal-webhooks
     // app.get("/payments", paymentController.getAllPayments);
 
     //session services
@@ -39,7 +39,7 @@ module.exports = (app) => {
     app.all('/*', async (req: Request, res: Response, next) => {
         try {
             if (req.originalUrl == "/paypalWebhook") {
-                await paypalService.webHooks;
+                await paymentServices.webHooks;
                 return
             }
             //validates requests, refreshs token and handles next, stops when invalid request

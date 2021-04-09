@@ -4,6 +4,7 @@ import mongoose from "../api/initDb";
 export interface IProduct {
     _id: mongoose.Types.ObjectId,
     name: string,
+    sku: string,
     variants: [{
         selector_1: { type: Number, required: true },
         selector_2: { type: Number, required: true },
@@ -25,6 +26,7 @@ export interface IProductVariant {
 export interface IProductSelected {
     _id: string,
     name: string,
+    sku: string,
     variant: IProductVariant,
     properties: Array<Array<{ name: string, id: number }>>
     count: number;
@@ -33,6 +35,7 @@ export interface IProductSelected {
 
 export const productApiSchema = new mongoose.Schema({
     name: { type: String, required: true },
+    sku: { type: String, required: true },
     variants: [{
         _id: false,
         selector_1: { type: Number, required: true },

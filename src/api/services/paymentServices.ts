@@ -6,7 +6,7 @@ import { getManyProducts } from "../controllers/productController"
 import { addPayment, getHighestInvoice } from "../controllers/paymentController"
 const fetch = require('node-fetch')
 const cache = require('memory-cache')
-import config = require('./../../../config')
+import config = require('../../../config')
 
 var purchaseSchema = new mongoose.Schema({ paypalResponse: { type: String, required: true } }, { strict: false });
 var Purchase = mongoose.model('purchases', purchaseSchema);
@@ -22,6 +22,7 @@ export let createPayment = async (req: Request, res: Response) => {
     let newInvoiceNo = oldInvoice[0].invoiceno + 1;
     //Sets Alls Amounts and Items into the PaymentObject 
     let newCreatePaymentObject = await creatPaymentObject(warenkorb);
+    return (requestService.sendResponse(res, "error", 500, newCreatePaymentObject));
     //Sets invoice number
     newCreatePaymentObject.transactions[0].invoice_number = newInvoiceNo.toString();
     let typevalidation = await checkCart(warenkorb);
@@ -119,32 +120,49 @@ export let webHooks = async (req: Request, res: Response, next) => {
 }
 //get called when paypal sends request
 export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
+    //Set inital counters and objects
     var newCreatePaymentObject = { ...createPaymentModel };
     let subtotalWithTax = 0;
     let subtotalWithoutTax = 0;
     let subTaxTotal = 0;
+    //Loops through all products
     for (let i = 0; i < warenkorb.length; i++) {
+        //Set const to get data easier
         const element = warenkorb[i];
+        //First part of the description string
         let newDescription = element.name + " in ";
+        //First character of sku
+        let newSku = element.sku;
+        //Loops through properties
         for (let j = 0; j < element.properties.length; j++) {
+            //Sets const to get data easier
             const prop = element.properties[j];
-            let selector = element.variant["selector_" + (i + 1)];
+            //Sets actual selector
+            let selector = element.variant["selector_" + (j + 1)];
+            //Loops though properties to access single prop
             for (let k = 0; k < prop.length; k++) {
+                //sets const to get data easier
                 const propElem = prop[k];
+                //When the first property gets accessed after the first properties
                 if (propElem.id == 0 && j > 0) {
+                    //Separator for diffrent kind of props
                     newDescription = newDescription + " & ";
                 }
+                //compares selector and id to find the fitting name and sku
                 if (propElem.id == selector) {
                     newDescription = newDescription + propElem.name;
+                    newSku = newSku + propElem.id.toString();
                 }
             }
         }
+        //final roundings
         let withoutTaxPrice = Math.round(((element.variant.price / 119) * 100) * 100) / 100;
         let taxPrice = Math.round(((element.variant.price / 119) * 19) * 100) / 100;
         let partTax = Math.round((taxPrice * element.count) * 100) / 100
         subTaxTotal = Math.round((subTaxTotal + partTax) * 100) / 100;
         subtotalWithoutTax = Math.round((subtotalWithoutTax + (withoutTaxPrice * element.count)) * 100) / 100;
         subtotalWithTax = subtotalWithTax + (element.count * element.variant.price);
+        //Paypal Api Item
         let newItem = {
             "name": element.name,
             "description": newDescription,
@@ -155,15 +173,18 @@ export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
             // "totalTax": (taxPrice * element.count).toFixed(2),
             // "totalPrice": (element.variant.price * element.count).toString(),
             // "totalWithoutTaxPrice": (withoutTaxPrice * element.count).toString(),
-            "sku": "1", //stock keeping unit
+            "sku": newSku, //stock keeping unit
             "currency": "EUR"
         }
+        //Pushes item to new payment object
         newCreatePaymentObject.transactions[0].item_list.items.push(newItem)
     }
+    //Sets the correct amounts
     let amount = newCreatePaymentObject.transactions[0].amount;
     amount.total = (Math.round(subtotalWithTax * 100) / 100).toFixed(2);
     amount.details.subtotal = (Math.round(subtotalWithoutTax * 100) / 100).toFixed(2);
     amount.details.tax = (Math.round(subTaxTotal * 100) / 100).toFixed(2);
+    //Returns new structured payment object
     return newCreatePaymentObject;
 }
 //Paypal request
