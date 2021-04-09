@@ -22,7 +22,6 @@ export let createPayment = async (req: Request, res: Response) => {
     let newInvoiceNo = oldInvoice[0].invoiceno + 1;
     //Sets Alls Amounts and Items into the PaymentObject 
     let newCreatePaymentObject = await creatPaymentObject(warenkorb);
-    return (requestService.sendResponse(res, "error", 500, newCreatePaymentObject));
     //Sets invoice number
     newCreatePaymentObject.transactions[0].invoice_number = newInvoiceNo.toString();
     let typevalidation = await checkCart(warenkorb);
@@ -168,12 +167,7 @@ export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
             "description": newDescription,
             "quantity": element.count.toString(),
             "price": withoutTaxPrice.toString(),
-            // "tax": taxPrice.toString(),
-            // "originalPrice": element.variant.price.toString(),
-            // "totalTax": (taxPrice * element.count).toFixed(2),
-            // "totalPrice": (element.variant.price * element.count).toString(),
-            // "totalWithoutTaxPrice": (withoutTaxPrice * element.count).toString(),
-            "sku": newSku, //stock keeping unit
+            "sku": newSku,
             "currency": "EUR"
         }
         //Pushes item to new payment object
@@ -294,3 +288,9 @@ export let createPaymentModel = {
         "cancel_url": config.paypal_redirect_domain + "cancel"
     }
 }
+// to debug newItem
+// "tax": taxPrice.toString(),
+// "originalPrice": element.variant.price.toString(),
+// "totalTax": (taxPrice * element.count).toFixed(2),
+// "totalPrice": (element.variant.price * element.count).toString(),
+// "totalWithoutTaxPrice": (withoutTaxPrice * element.count).toString(),
