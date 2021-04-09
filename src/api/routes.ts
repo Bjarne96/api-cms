@@ -2,18 +2,13 @@ import * as customerController from "./controllers/customerController";
 import * as articleController from "./controllers/articleController";
 import * as productController from "./controllers/productController";
 import * as backboneController from "./controllers/backboneController";
-import * as paymentController from "./controllers/paymentController";
 import * as userController from "./controllers/userController";
 
 import * as userService from "./services/userServices";
 import * as sessionService from "./services/sessionServices";
 import * as paypalService from "./services/paypalService";
-
+import * as emailService from "./services/emailService";
 import { Request, Response } from 'express';
-let express = require('express')
-let path = require('path');
-let file_dir = path.join(__dirname, 'files');
-
 
 module.exports = (app) => {
 
@@ -23,6 +18,10 @@ module.exports = (app) => {
     app.get("/article/:id", articleController.getArticle);
     app.get("/products", productController.getAllProducts);
     app.get("/product/:id", productController.getProduct);
+
+    //email services
+    app.post("/contact", emailService.proccessContact) //dummy proccessor
+    app.post("/trigger", emailService.sendMail) //dummy payment email
 
     //paypal services
     app.post("/create_payment", paypalService.createPayment) //paypal-createpayment
