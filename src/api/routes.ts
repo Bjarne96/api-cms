@@ -21,7 +21,7 @@ module.exports = (app) => {
 
     //email services
     app.post("/contact", emailServices.proccessContact) //dummy proccessor
-    app.post("/trigger", emailServices.sendMail) //dummy payment email
+    app.post("/trigger", emailServices.sendOrderMail) //dummy payment email
 
     //paypal services
     app.post("/create_payment", paymentServices.createPayment) //paypal-createpayment

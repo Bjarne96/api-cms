@@ -45,7 +45,6 @@ export let validate = async (req: Request, res: Response, next) => {
 
     //sends response if authentication failed
     if (verifyResponse.status == "error") {
-        console.log('req', req.originalUrl);
         //ends the request because of an invalid token
         await requestService.sendResponse(res, verifyResponse.status, 403, verifyResponse.result);
         return;

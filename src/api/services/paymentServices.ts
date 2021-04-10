@@ -1,12 +1,16 @@
-import { Request, Response } from 'express';
-import * as requestService from "./requestServices";
 import mongoose from "../initDb";
+import { Request, Response } from 'express';
+import { sendResponse } from "./requestServices";
 import { IPayment, IProduct, IProductSelected } from '../../schemas';
 import { getManyProducts } from "../controllers/productController"
 import { addPayment, getHighestInvoice } from "../controllers/paymentController"
+import { paypal } from "../utils/messageUtils"
+
+import config = require('../../../config')
+
 const fetch = require('node-fetch')
 const cache = require('memory-cache')
-import config = require('../../../config')
+
 
 var purchaseSchema = new mongoose.Schema({ paypalResponse: { type: String, required: true } }, { strict: false });
 var Purchase = mongoose.model('purchases', purchaseSchema);
@@ -26,7 +30,7 @@ export let createPayment = async (req: Request, res: Response) => {
     newCreatePaymentObject.transactions[0].invoice_number = newInvoiceNo.toString();
     let typevalidation = await checkCart(warenkorb);
     let productIds = [];
-    if (!typevalidation) return (requestService.sendResponse(res, "error", 500, "wrong type"));
+    if (!typevalidation) return (sendResponse(res, "error", 500, "wrong type"));
     for (let i = 0; i < warenkorb.length; i++) {
         productIds.push(warenkorb[i]._id);
     }
@@ -51,17 +55,17 @@ export let createPayment = async (req: Request, res: Response) => {
                 }
 
             }
-            if (!valid) return (requestService.sendResponse(res, "error", 500, "wrong item"));
+            if (!valid) return (sendResponse(res, "error", 500, "wrong item"));
         }
     } catch (err) {
-        return (requestService.sendResponse(res, "error", 500, "js error"));
+        return (sendResponse(res, "error", 500, "js error"));
     }
     //paypal create payment request
     let paymentRequest = JSON.parse(await createPaypalRequest("POST", config.paypal_createpayment_url, newCreatePaymentObject));
     let approvalURL;
     //Todo real exception handling
     if (paymentRequest == undefined && !paymentRequest.length) return (
-        requestService.sendResponse(res, "ok", 200, "payment request unsuccsessfull")
+        sendResponse(res, "ok", 200, "payment request unsuccsessfull")
     );
     //get Approval Url
     for (let i = 0; i < paymentRequest.links.length; i++) {
@@ -73,22 +77,22 @@ export let createPayment = async (req: Request, res: Response) => {
 
     //Todo real exception handling
     if (approvalURL == undefined && !approvalURL.length) return (
-        requestService.sendResponse(res, "ok", 200, "couldnt find approvalurl")
+        sendResponse(res, "ok", 200, "couldnt find approvalurl")
     );
     // save paymentid to payment collection
     let newPayment: IPayment = {
         paymentid: paymentRequest.id,
         invoiceno: newInvoiceNo
     }
-    if (!await addPayment(newPayment)) return (requestService.sendResponse(res, "ok", 200, "mongodb error"));
+    if (!await addPayment(newPayment)) return (sendResponse(res, "ok", 200, "mongodb error"));
     // returns approval url
-    return (requestService.sendResponse(res, "ok", 200, approvalURL));
+    return (sendResponse(res, "ok", 200, approvalURL));
 }
 
 //creates a payment by calling paypal api
 export let checkOrder = async (req: Request, res: Response, next) => {
     let orderid = req.params.id
-    return (requestService.sendResponse(res, "ok", 200, "jwtPayload"));
+    return (sendResponse(res, "ok", 200, "jwtPayload"));
 }
 //get called when paypal sends request
 export let webHooks = async (req: Request, res: Response, next) => {
@@ -99,7 +103,7 @@ export let webHooks = async (req: Request, res: Response, next) => {
         }
         let addPurchase = new Purchase(purchase);
         addPurchase.save((err: mongoose.Error) => { })
-        return (requestService.sendResponse(res, "ok", 200, "aha"));
+        return (sendResponse(res, "ok", 200, "aha"));
     } catch (err) {
         console.log('err', err);
         let errorString = JSON.stringify(err);
@@ -108,7 +112,7 @@ export let webHooks = async (req: Request, res: Response, next) => {
         }
         let addPurchase = new Purchase(purchase);
         addPurchase.save((err: mongoose.Error) => { })
-        return (requestService.sendResponse(res, "ok", 200, "test"));
+        return (sendResponse(res, "ok", 200, "test"));
     }
 }
 //get called when paypal sends request
@@ -162,6 +166,7 @@ export let creatPaymentObject = async (warenkorb: Array<IProductSelected>) => {
             "quantity": element.count.toString(),
             "price": withoutTaxPrice.toString(),
             "sku": newSku,
+            "tax": taxPrice.toString(),
             "currency": "EUR"
         }
         //Pushes item to new payment object
@@ -213,7 +218,6 @@ export let createPaypalRequest = async (method: string, secondPartUrl: string, d
 }
 //get called to finish the payment after the payee updated the status
 export let executePayment = async (req: Request, res: Response) => {
-    console.log('req.body', req.body);
     let new_paypal_getpayment_url = config.paypal_getpayment_url.replace("{payment_id}", req.body.paymentId);
     //get payment and verfiy
     let paymentResponse = await createPaypalRequest("GET", new_paypal_getpayment_url)
@@ -232,14 +236,15 @@ export let executePayment = async (req: Request, res: Response) => {
         let execute = JSON.parse(paymentResponse);
         if (execute.state == "approved") {
             //send email to customer and production
+            return (sendResponse(res, "ok", 200, true));
         } else {
-            //send error to admin
+            //send error to admin todo
+            return (sendResponse(res, "error", 500, false));
         }
-        //dummy
-        return (requestService.sendResponse(res, "ok", 200, JSON.parse(executeResponse)));
+    } else {
+        //send error to admin todo
+        return (sendResponse(res, "error", 500, "ohno"));
     }
-    //dummy
-    return (requestService.sendResponse(res, "ok", 200, "ohno"));
 }
 //requests paypal access token
 export let getAccessToken = async () => {
@@ -308,23 +313,22 @@ export let createPaymentModel = {
                     "insurance": "0.00"
                 }
             },
-            "description": config.paypal_description,
+            "description": paypal.description,
             "custom": "",
             "invoice_number": "",
 
-            "soft_descriptor": config.paypal_description,
+            "soft_descriptor": paypal.description,
             "item_list": {
                 "items": []
             }
         }],
-    "note_to_payer": config.paypal_note_to_payer,
+    "note_to_payer": paypal.note_to_payer,
     "redirect_urls": {
         "return_url": config.paypal_redirect_domain + "success",
         "cancel_url": config.paypal_redirect_domain + "cancel"
     }
 }
 // to debug newItem
-// "tax": taxPrice.toString(),
 // "originalPrice": element.variant.price.toString(),
 // "totalTax": (taxPrice * element.count).toFixed(2),
 // "totalPrice": (element.variant.price * element.count).toString(),
