@@ -3,8 +3,8 @@ import { Request, Response } from 'express';
 import * as requestService from "./requestServices";
 import Handlebars from "handlebars"
 import { email, email_selector } from "../utils/messageUtils";
-import { createPaypalRequest } from "./paymentServices";
-import config = require('../../../config')
+import { createPaypalRequest } from "./paypalServices";
+import config = require('../../../config');
 var fs = require('fs');
 var srcPath = __dirname.replace("dist", "src");
 

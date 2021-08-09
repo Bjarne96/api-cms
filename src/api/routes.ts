@@ -6,12 +6,11 @@ import * as userController from "./controllers/userController";
 
 import * as userService from "./services/userServices";
 import * as sessionService from "./services/sessionServices";
-import * as paymentServices from "./services/paymentServices";
+import * as paypalServices from "./services/paypalServices";
 import * as emailServices from "./services/emailServices";
 import { Request, Response } from 'express';
 
 module.exports = (app) => {
-
     //all needed get services without authentication
     app.get("/loadedbackbone/:id", backboneController.getLoadedBackbone);
     app.get("/articles", articleController.getAllArticles);
@@ -24,22 +23,24 @@ module.exports = (app) => {
     app.post("/trigger", emailServices.sendOrderMail) //dummy payment email
 
     //paypal services
-    app.post("/create_payment", paymentServices.createPayment) //paypal-createpayment
-    app.post("/execute_payment", paymentServices.executePayment) //paypal-createpayment
-    app.post("/paypalWebhook", paymentServices.webHooks) //paypal-webhooks
+    app.post("/create_payment", paypalServices.createPayment) //paypal-createpayment
+    app.post("/execute_payment", paypalServices.executePayment) //paypal-createpayment
+    app.post("/paypalWebhook", paypalServices.webHooks) //paypal-webhooks
     // app.get("/payments", paymentController.getAllPayments);
+
+    //activate when making a new account and comment out afterwards
+    //app.put("/register", userService.register);
+    //activate when removing a new account and comment out afterwards
+    //app.delete("/user/:id", userController.deleteUser);
 
     //session services
     app.post("/login", sessionService.login) //login
-
-    //activate when making a new account and disable afterwards
-    //app.put("/register", userService.register);
 
     //authenticate request (req.header.authorization)
     app.all('/*', async (req: Request, res: Response, next) => {
         try {
             if (req.originalUrl == "/paypalWebhook") {
-                await paymentServices.webHooks;
+                await paypalServices.webHooks;
                 return
             }
             //validates requests, refreshs token and handles next, stops when invalid request

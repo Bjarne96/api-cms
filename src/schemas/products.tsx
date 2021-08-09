@@ -47,8 +47,7 @@ export const productApiSchema = new mongoose.Schema({
     properties: [[
         {
             _id: false,
-            name: { type: String, required: true },
-            id: { type: Number, required: true }
+            name: { type: String, required: true }
         }
     ]]
 })
