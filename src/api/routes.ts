@@ -2,12 +2,11 @@ import * as customerController from "./controllers/customerController";
 import * as articleController from "./controllers/articleController";
 import * as productController from "./controllers/productController";
 import * as backboneController from "./controllers/backboneController";
-import * as userController from "./controllers/userController";
+// import * as userController from "./controllers/userController";
 
-import * as userService from "./services/userServices";
+// import * as userService from "./services/userServices";
 import * as sessionService from "./services/sessionServices";
 import * as paypalServices from "./services/paypalServices";
-import * as emailServices from "./services/emailServices";
 import { Request, Response } from 'express';
 
 module.exports = (app) => {
@@ -19,8 +18,8 @@ module.exports = (app) => {
     app.get("/product/:id", productController.getProduct);
 
     //email services
-    app.post("/contact", emailServices.proccessContact) //dummy proccessor
-    app.post("/trigger", emailServices.sendOrderMail) //dummy payment email
+    // app.post("/contact", emailServices.proccessContact) //dummy proccessor
+    // app.post("/trigger", emailServices.sendOrderMail) //dummy payment email
 
     //paypal services
     app.post("/create_payment", paypalServices.createPayment) //paypal-createpayment
@@ -94,13 +93,13 @@ module.exports = (app) => {
     });
 
     //session services
-    app.put("/register", userService.register); //register
+    // app.put("/register", userService.register); //register
 
     //user routes
-    app.get("/users", userController.getAllUsers);
-    app.get("/user/:id", userController.getUser);
-    app.put("/user", userController.addUser);
-    app.delete("/user/:id", userController.deleteUser);
-    app.post("/user/:id", userController.updateUser);
+    // app.get("/users", userController.getAllUsers);
+    // app.get("/user/:id", userController.getUser);
+    // app.put("/user", userController.addUser);
+    // app.delete("/user/:id", userController.deleteUser);
+    // app.post("/user/:id", userController.updateUser);
 
 }

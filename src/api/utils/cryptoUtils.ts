@@ -1,9 +1,6 @@
-import crypto = require('crypto');
-import moment = require('moment')
-import config = require('./../../../config')
-import bcrypt = require('bcrypt');
+import config = require('./../../../config');
 import jwt = require('jsonwebtoken');
-import * as messageUtils from "./../utils/messageUtils"
+import * as messageUtils from "./../utils/messageUtils";
 import { IUtilReturn, IJWTPayload } from "./../interfaces/sessionInterfaces";
 
 //crypto functions
@@ -53,34 +50,35 @@ export let verifyToken = async (bearerHeader) => {
         })
     })
 }
+// import bcrypt = require('bcrypt');
+// import crypto = require('crypto');
+// //decrypts string -> ToDo Decrypt + validating object
+// export let decrypt = async (value) => {
+//     //todo: string validation
+//     return new Promise<string>(resolve => {
+//         let decipher = crypto.createDecipher(config.bcrypt_algorithm, config.bcrypt_password)
+//         let dec: string = decipher.update(value, 'hex', 'utf8')
+//         dec += decipher.final('utf8');
+//         resolve(dec);
+//     })
+// }
+// //encrypts string
+// export let encrypt = (value: string) => {
+//     return new Promise<string>(resolve => {
+//         var cipher = crypto.createCipher(config.bcrypt_algorithm, config.bcrypt_password)
+//         var crypted: string = cipher.update(value, 'utf8', 'hex')
+//         crypted += cipher.final('hex');
+//         resolve(crypted);
+//     })
+// }
 
-//decrypts string -> ToDo Decrypt + validating object
-export let decrypt = async (value) => {
-    //todo: string validation
-    return new Promise<string>(resolve => {
-        let decipher = crypto.createDecipher(config.bcrypt_algorithm, config.bcrypt_password)
-        let dec: string = decipher.update(value, 'hex', 'utf8')
-        dec += decipher.final('utf8');
-        resolve(dec);
-    })
-}
-//encrypts string
-export let encrypt = (value: string) => {
-    return new Promise<string>(resolve => {
-        var cipher = crypto.createCipher(config.bcrypt_algorithm, config.bcrypt_password)
-        var crypted: string = cipher.update(value, 'utf8', 'hex')
-        crypted += cipher.final('hex');
-        resolve(crypted);
-    })
-}
+// //bycrypt functions
 
-//bycrypt functions
-
-//hashes value
-export let hashValue = (value: string) => {
-    return (bcrypt.hashSync(value, config.bcrypt_saltrounds));
-}
-//compares hash values and returns true if value matches hash
-export let compareHash = (value: string, hash: string) => {
-    return (bcrypt.compareSync(value, hash));
-}
+// //hashes value
+// export let hashValue = (value: string) => {
+//     return (bcrypt.hashSync(value, config.bcrypt_saltrounds));
+// }
+// //compares hash values and returns true if value matches hash
+// export let compareHash = (value: string, hash: string) => {
+//     return (bcrypt.compareSync(value, hash));
+// }

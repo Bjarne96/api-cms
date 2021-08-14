@@ -20,6 +20,7 @@ var Purchase = mongoose.model('purchases', purchaseSchema);
 export let createPayment = async (req: Request, res: Response) => {
     //validation   
     let warenkorb: Array<IProductSelected> = req.body;
+    console.log('warenkorb', warenkorb);
     //Get new Invoice Number
     let oldInvoice: Array<IPayment> = await getHighestInvoice();
     //@ts-ignore
@@ -223,11 +224,12 @@ export let executePayment = async (req: Request, res: Response) => {
     let paymentResponse = await createPaypalRequest("GET", new_paypal_getpayment_url)
     //Todo error handling
     let payment = JSON.parse(paymentResponse);
+    console.log('payment', payment);
     //execute payment
     if (payment.payer.status == "VERIFIED") {
         let new_paypal_execute_url = config.paypal_execute_url.replace("{payment_id}", req.body.paymentId);
         let new_paypal_execute_body = { payer_id: req.body.PayerID }
-        let executeResponse = await createPaypalRequest(
+        await createPaypalRequest(
             "POST",
             new_paypal_execute_url,
             new_paypal_execute_body

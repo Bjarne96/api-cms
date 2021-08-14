@@ -9,7 +9,8 @@ export const invalid = {
 export const login = {
     email: "Email does not exist.",
     expired: "Login expired.",
-    password: "Password does not match."
+    password: "Password does not match.",
+    disabled: "Sorry the login is disabled."
 }
 
 export const registration = {

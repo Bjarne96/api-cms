@@ -4,7 +4,7 @@ import * as mongoose from "mongoose";
 import * as requestService from "./../services/requestServices";
 import { IUtilReturn } from "../interfaces";
 import * as cryptoUtils from "./../utils/cryptoUtils";
-import moment = require('moment');
+import * as moment from 'moment'
 import * as userUtils from "../utils/userUtils";
 
 //GET all Customers

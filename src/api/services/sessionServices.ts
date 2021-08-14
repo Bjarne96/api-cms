@@ -10,31 +10,31 @@ import * as requestService from "./requestServices";
 
 //loggs in the 
 export let login = async (req: ILoginRequest, res: Response) => {
+    return (requestService.sendResponse(res, "error", 500, messageUtils.login.disabled))
+    // //todo validate body object
+    // const { email, password } = req.body;
 
-    //todo validate body object
-    const { email, password } = req.body;
+    // //request user by email
+    // let user: IUserResponse = await userUtils.getUserByParam(email, "email");
 
-    //request user by email
-    let user: IUserResponse = await userUtils.getUserByParam(email, "email");
+    // //if user is empty there is no matching email
+    // if (!user.length) return (requestService.sendResponse(res, "error", 401, messageUtils.login.email));
 
-    //if user is empty there is no matching email
-    if (!user.length) return (requestService.sendResponse(res, "error", 401, messageUtils.login.email));
+    // //if hash returns false the password doesnt match
+    // if (!cryptoUtils.compareHash(password, user[0].password)) {
+    //     return (requestService.sendResponse(res, "error", 401, messageUtils.login.password))
+    // }
+    // //Creates payload data
+    // let jwtPayload = { email: email, admin: user[0].admin };
 
-    //if hash returns false the password doesnt match
-    if (!cryptoUtils.compareHash(password, user[0].password)) {
-        return (requestService.sendResponse(res, "error", 401, messageUtils.login.password))
-    }
-    //Creates payload data
-    let jwtPayload = { email: email, admin: user[0].admin };
+    // //creates new Token
+    // let newToken = await cryptoUtils.createToken(jwtPayload);
 
-    //creates new Token
-    let newToken = await cryptoUtils.createToken(jwtPayload);
+    // //sets new Token in header
+    // res.set('Authorization', "Bearer " + newToken);
 
-    //sets new Token in header
-    res.set('Authorization', "Bearer " + newToken);
-
-    //sends encrypted session
-    return (requestService.sendResponse(res, "ok", 200, jwtPayload));
+    // //sends encrypted session
+    // return (requestService.sendResponse(res, "ok", 200, jwtPayload));
 }
 
 //valdiates the request and refreshes the token
