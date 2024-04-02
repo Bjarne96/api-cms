@@ -15,7 +15,7 @@
 - AWS EC2 with Ubuntu as the hosting service
 
 ## Learnings
-Despite integrating everything, I lacked in-depth knowledge of IT security and had only limited experience. I would be responsible for the security of this data and the access and security to our PayPal account. It became clear to me that going into production with this system posed a risk I could not estimate, so I decided against it. However, I learned a lot about myself, the technologies involved and project management.
+Despite integrating everything, I lacked in-depth knowledge of IT security and had only limited experience. I would be responsible for the security of the customer data and the access and security to our PayPal account. It became clear to me that going into production with this system posed a risk I could not estimate, so I decided against it. However, I learned a lot about myself, the technologies involved and project management.
 
 - Prioritizing the learning experience ahead of the fast e-commerce website launch, shows I am a developer at heart. For potential future self-employed businesses I am aware of that fact. 
 - React.js as a Single Page Application is not the best solution for a simple e-commerce website. To keep a website simple and optimize its performance, it is easier to use native technologies.<br> 
